@@ -1,20 +1,39 @@
+/*
+An attempt at describing the wiki media grammer for the purposes of parsing Wiktionary pages.
+To build this grammar:
+$ jison wiktionary.jison -m commonjs -p lalr
+*/
 /* lexical grammar */
 %lex
 
-WikiMarkupCharacters [|[\]*#:;<>='{}]
-SPACE [ \t]
-NL \n
+WikiMarkupCharacters    [|[\]*#:;<>='{}]
+PlaneText               [^|[\]*#:;<>='{}\n]
+SPACE                   [ \t]
+NL                      \n
 
 %options flex
 
 %%
 
 
-\r                      /* Skip Line Feed */
-^\n                     return 'EMPTY_LINE'
-\n                      return 'NEWLINE'
-.+                      return 'TEXT'
-<<EOF>>                 return 'EOF'
+(\r|\n|\n\r|\r\n)                   %{
+                                        if (yylloc.first_column)
+                                            return 'NEWLINE'
+                                        else
+                                            return 'EMPTY_LINE';
+                                    %}
+{PlaneText}+                        return 'TEXT'
+{SPACE}*[=]+{SPACE}*(\n|$)          return 'H_END'
+{SPACE}*[=]{1,6}{SPACE}*            %{
+                                        if (yylloc.first_column) {
+                                            return 'TEXT'               /* '=' anywhere but at the begging becomes just text */
+                                        } else {
+                                            return 'H'+yytext.trim().length+'_BEG';
+                                        }
+                                    %}
+[']                                 return 'SINGLE_QUOTE'
+<<EOF>>                             return 'EOF'
+.                                   return 'INVALID'
 
 /lex
 
@@ -34,13 +53,70 @@ wiki-page
     ;
 
 article
-    : paragraphs
+    : paragraphs sections paragraphs
+        { $$ = {t: 'article', c:[$1, $2, $3]};}
+    | sections paragraphs
+        { $$ = {t: 'article', c:[$1, $2]};}
+    | sections
+        { $$ = {t: 'article', c:[$1]};}
+    | paragraphs
         { $$ = {t: 'article', c:[$1]};}
     ;
 
+sections
+    : sections section1
+    | section1
+    ;
+
+section1
+    : section1-title section1-content
+        { $$ = {t: 'section1', c:[$1, $2]}; }
+    | section1-title
+        { $$ = {t: 'section1', c:[$1]}; }
+    ;
+
+section1-title
+    : H1_BEG TEXT H_END
+        { $$ = {t: 'section1-title', c:[$2]}; }
+    ;
+
+section1-content
+    : section1-content paragraphs
+        { $1.c.push($2); $$ = $1; }
+    | section1-content section2
+        { $1.c.push($2); $$ = $1; }
+    | section1-content section3
+        { $1.c.push($2); $$ = $1; }
+    | paragraphs
+        { $$ = {t: 'section1-content', c:[$1]}; }
+    ;
+
+section2
+    : section2-title section2-content
+        { $$ = {t: 'section2', c:[$1, $2]}; }
+    | section1-title
+        { $$ = {t: 'section2', c:[$1]}; }
+    ;
+
+section2-title
+    : H2_BEG TEXT H_END
+        { $$ = {t: 'section2-title', c:[$2]}; }
+    ;
+
+section2-content
+    : section2-content paragraphs
+        { $1.c.push($2); $$ = $1; }
+    | section2-content section3
+        { $1.c.push($2); $$ = $1; }
+    | paragraphs
+        { $$ = {t: 'section2-content', c:[$1]}; }
+    ;
+
 paragraphs
-    : paragraph paragraphs
+    : paragraphs paragraph
+        { $1.c.push($2); $$ = $1; }
     | paragraph
+        { $$ = {t: 'paragraphs', c:[$1]};}
     ;
 
 paragraph
@@ -53,8 +129,8 @@ paragraph
     ;
 
 lines-of-text
-    : line-of-text lines-of-text
-        { $$ = {t: 'lines-of-text', c:[$1, $2]}; }
+    : lines-of-text line-of-text
+        { $1.c.push($2); $$ = $1; }
     | line-of-text
         { $$ = {t: 'lines-of-text', c:[$1]}; }
     ;
@@ -67,8 +143,34 @@ line-of-text
     ;
 
 text
+    : text rich-text
+        { $1.c.push($2); $$ = $1; }
+    | rich-text
+        { $$ = {t: 'text', c:[$1]}; }
+    ;
+
+plain-text
     : TEXT
-        { $$ = {t: 'text', v: $1}; }
+        { $$ = {t: 'plain-text', v: $1}; }
+    ;
+
+rich-text
+    : bold-text
+        { $$ = {t: 'rich-text', v: $1}; }
+    | italic-text
+        { $$ = {t: 'rich-text', v: $1}; }
+    | plain-text
+        { $$ = {t: 'rich-text', v: $1}; }
+    ;
+
+italic-text
+    : SINGLE_QUOTE SINGLE_QUOTE text SINGLE_QUOTE SINGLE_QUOTE
+        { $$ = {t: 'italic-text', v: $3}; }
+    ;
+
+bold-text
+    : SINGLE_QUOTE SINGLE_QUOTE SINGLE_QUOTE text SINGLE_QUOTE SINGLE_QUOTE SINGLE_QUOTE
+        { $$ = {t: 'bold-text', v: $4}; }
     ;
 
 line-ending
@@ -77,8 +179,10 @@ line-ending
     ;
 
 blank-lines
-    : blank-line blank-lines
+    : blank-lines blank-line
+        { $1.c.push($2); $$ = $1; }
     | blank-line
+        { $$ = {t: 'blank-lines', c: [$1]};}
     ;
 
 blank-line
@@ -90,3 +194,4 @@ end-of-file
     : EOF
         { $$ = {t: 'eof'};}
     ;
+
