@@ -19,7 +19,10 @@ export module Samples {
         ['Multiple Paragraphs', 'Paragraph 1 Line 1.\nParagraph 1 Line 2.\n\nParagraph 2 Line 1.\nParagraph 2 Line 2.\n\n'],
         ['Italics', `''Italics Text''`],
         ['Bold', "'''Bold'''"],
-        // ['Bold Italics', "'''''Bold Italics'''''"],
+        ['Bold Italics', "'''''Bold Italics'''''"],
+        ['Italics(Bold Text)', "'''''Bold Italics''' Italics''"],
+        ['Bold(Italics Text)', "'''''Italics Bold'' Bold'''"],
+        ['Bold(Italics Text Italics)', "'''''Italics Bold'' Bold ''Italics Bold'''''"],
     ];
 
     export function getParserSamples() {

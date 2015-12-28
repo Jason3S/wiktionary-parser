@@ -31,7 +31,7 @@ NL                      \n
                                             return 'H'+yytext.trim().length+'_BEG';
                                         }
                                     %}
-[']                                 return 'SINGLE_QUOTE'
+[']                                 return 'S_QUOTE'
 <<EOF>>                             return 'EOF'
 .                                   return 'INVALID'
 
@@ -164,13 +164,45 @@ rich-text
     ;
 
 italic-text
-    : SINGLE_QUOTE SINGLE_QUOTE text SINGLE_QUOTE SINGLE_QUOTE
-        { $$ = {t: 'italic-text', v: $3}; }
+    : S_QUOTE S_QUOTE italic-text-inner-text S_QUOTE S_QUOTE
+        { $$ = {t: 'italic-text', c: $3.c}; }
+    ;
+
+italic-text-inner-text
+    : italic-text-inner-text plain-text
+        { $1.c.push($2); $$ = $1; }
+    | italic-text-inner-text bold-text-inner
+        { $1.c.push($2); $$ = $1; }
+    | plain-text
+        { $$ = {t: 'italic-text-inner', c: [$1]}; }
+    | bold-text-inner
+        { $$ = {t: 'italic-text-inner', c: [$1]}; }
+    ;
+
+italic-text-inner
+    : S_QUOTE S_QUOTE plain-text S_QUOTE S_QUOTE
+        { $$ = {t: 'italic-text', c: [$3]}; }
     ;
 
 bold-text
-    : SINGLE_QUOTE SINGLE_QUOTE SINGLE_QUOTE text SINGLE_QUOTE SINGLE_QUOTE SINGLE_QUOTE
-        { $$ = {t: 'bold-text', v: $4}; }
+    : S_QUOTE S_QUOTE S_QUOTE bold-text-inner-text S_QUOTE S_QUOTE S_QUOTE
+        { $$ = {t: 'bold-text', c: $4.c}; }
+    ;
+
+bold-text-inner-text
+    : bold-text-inner-text plain-text
+        { $1.c.push($2); $$ = $1; }
+    | bold-text-inner-text italic-text-inner
+        { $1.c.push($2); $$ = $1; }
+    | plain-text
+        { $$ = {t: 'bold-text-inner', c: [$1]}; }
+    | italic-text-inner
+        { $$ = {t: 'bold-text-inner', c: [$1]}; }
+    ;
+
+bold-text-inner
+    : S_QUOTE S_QUOTE S_QUOTE plain-text S_QUOTE S_QUOTE S_QUOTE
+        { $$ = {t: 'bold-text', c: [$4]}; }
     ;
 
 line-ending
