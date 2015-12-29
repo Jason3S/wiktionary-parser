@@ -24,7 +24,7 @@ NL                      \n
                                     %}
 {PlaneText}+                        return 'TEXT'
 {SPACE}*[=]+{SPACE}*(\n|$)          return 'H_END'
-{SPACE}*[=]{1,6}{SPACE}*            %{
+{SPACE}*[=]{1,5}{SPACE}*            %{
                                         if (yylloc.first_column) {
                                             return 'TEXT'               /* '=' anywhere but at the begging becomes just text */
                                         } else {
@@ -38,6 +38,16 @@ NL                      \n
 /lex
 
 /* operator associations and precedence */
+%left section1
+%left section1-content
+%left section2
+%left section2-content
+%left section3
+%left section3-content
+%left section4
+%left section4-content
+%left section5
+%left section5-content
 
 
 %start wiki-page
@@ -53,10 +63,15 @@ wiki-page
     ;
 
 article
-    : paragraphs sections paragraphs
-        { $$ = {t: 'article', c:[$1, $2, $3]};}
-    | sections paragraphs
-        { $$ = {t: 'article', c:[$1, $2]};}
+    : article-content
+        { $$ = $1; }
+    ;
+
+article-content
+    : article-content paragraphs
+        { $1.c.push($2); $$ = $1; }
+    | article-content sections
+        { $1.c.push($2); $$ = $1; }
     | sections
         { $$ = {t: 'article', c:[$1]};}
     | paragraphs
@@ -65,7 +80,25 @@ article
 
 sections
     : sections section1
+        { $1.c.push($2); $$ = $1; }
+    | sections section2
+        { $1.c.push($2); $$ = $1; }
+    | sections section3
+        { $1.c.push($2); $$ = $1; }
+    | sections section4
+        { $1.c.push($2); $$ = $1; }
+    | sections section5
+        { $1.c.push($2); $$ = $1; }
     | section1
+        { $$ = {t: 'sections', c:[$1]}; }
+    | section2
+        { $$ = {t: 'sections', c:[$1]}; }
+    | section3
+        { $$ = {t: 'sections', c:[$1]}; }
+    | section4
+        { $$ = {t: 'sections', c:[$1]}; }
+    | section5
+        { $$ = {t: 'sections', c:[$1]}; }
     ;
 
 section1
@@ -87,14 +120,26 @@ section1-content
         { $1.c.push($2); $$ = $1; }
     | section1-content section3
         { $1.c.push($2); $$ = $1; }
+    | section1-content section4
+        { $1.c.push($2); $$ = $1; }
+    | section1-content section5
+        { $1.c.push($2); $$ = $1; }
     | paragraphs
+        { $$ = {t: 'section1-content', c:[$1]}; }
+    | section2
+        { $$ = {t: 'section1-content', c:[$1]}; }
+    | section3
+        { $$ = {t: 'section1-content', c:[$1]}; }
+    | section4
+        { $$ = {t: 'section1-content', c:[$1]}; }
+    | section5
         { $$ = {t: 'section1-content', c:[$1]}; }
     ;
 
 section2
     : section2-title section2-content
         { $$ = {t: 'section2', c:[$1, $2]}; }
-    | section1-title
+    | section2-title
         { $$ = {t: 'section2', c:[$1]}; }
     ;
 
@@ -108,8 +153,87 @@ section2-content
         { $1.c.push($2); $$ = $1; }
     | section2-content section3
         { $1.c.push($2); $$ = $1; }
+    | section2-content section4
+        { $1.c.push($2); $$ = $1; }
+    | section2-content section5
+        { $1.c.push($2); $$ = $1; }
     | paragraphs
         { $$ = {t: 'section2-content', c:[$1]}; }
+    | section3
+        { $$ = {t: 'section2-content', c:[$1]}; }
+    | section4
+        { $$ = {t: 'section2-content', c:[$1]}; }
+    | section5
+        { $$ = {t: 'section2-content', c:[$1]}; }
+    ;
+
+section3
+    : section3-title section3-content
+        { $$ = {t: 'section3', c:[$1, $2]}; }
+    | section3-title
+        { $$ = {t: 'section3', c:[$1]}; }
+    ;
+
+section3-title
+    : H3_BEG TEXT H_END
+        { $$ = {t: 'section3-title', c:[$2]}; }
+    ;
+
+section3-content
+    : section3-content paragraphs
+        { $1.c.push($2); $$ = $1; }
+    | section3-content section4
+        { $1.c.push($2); $$ = $1; }
+    | section3-content section5
+        { $1.c.push($2); $$ = $1; }
+    | paragraphs
+        { $$ = {t: 'section3-content', c:[$1]}; }
+    | section4
+        { $$ = {t: 'section3-content', c:[$1]}; }
+    | section5
+        { $$ = {t: 'section3-content', c:[$1]}; }
+    ;
+
+section4
+    : section4-title section4-content
+        { $$ = {t: 'section4', c:[$1, $2]}; }
+    | section4-title
+        { $$ = {t: 'section4', c:[$1]}; }
+    ;
+
+section4-title
+    : H4_BEG TEXT H_END
+        { $$ = {t: 'section4-title', c:[$2]}; }
+    ;
+
+section4-content
+    : section4-content paragraphs
+        { $1.c.push($2); $$ = $1; }
+    | section4-content section5
+        { $1.c.push($2); $$ = $1; }
+    | paragraphs
+        { $$ = {t: 'section4-content', c:[$1]}; }
+    | section5
+        { $$ = {t: 'section4-content', c:[$1]}; }
+    ;
+
+section5
+    : section5-title section5-content
+        { $$ = {t: 'section5', c:[$1, $2]}; }
+    | section5-title
+        { $$ = {t: 'section5', c:[$1]}; }
+    ;
+
+section5-title
+    : H5_BEG TEXT H_END
+        { $$ = {t: 'section5-title', c:[$2]}; }
+    ;
+
+section5-content
+    : section5-content paragraphs
+        { $1.c.push($2); $$ = $1; }
+    | paragraphs
+        { $$ = {t: 'section5-content', c:[$1]}; }
     ;
 
 paragraphs
