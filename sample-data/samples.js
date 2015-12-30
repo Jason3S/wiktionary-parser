@@ -1,13 +1,14 @@
+var fs_1 = require("fs");
 /**
  * Created by jasondent on 24/12/2015.
  */
 var Samples;
 (function (Samples) {
     var parserSamples = [
-        ['Empty String', ""],
-        ['New Line', '\n'],
-        ['Empty Lines', '\n\n\n\n\n'],
-        ['Single Word', 'Hello'],
+        ['Empty String', "", [{ s: '.t', e: ['wiki-page', 'eof'] }]],
+        ['New Line', '\n', [{ s: '.t', e: ['wiki-page', 'article', 'paragraphs', 'paragraph', 'blank-line', 'eof'] }]],
+        ['Empty Lines', '\n\n\n\n\n', [{ s: '.t:val("blank-line")', e: ['blank-line', 'blank-line', 'blank-line', 'blank-line', 'blank-line'] }]],
+        ['Single Word', 'Hello', [{ s: '.t:val("plain-text") ~ .v', e: ['Hello'] }]],
         ['Word, New Line', 'Word\n'],
         ['New Line, Word', '\nWord'],
         ['Sentence', 'The quick red fox jumped over the lazy brown dog.'],
@@ -40,5 +41,9 @@ var Samples;
         return parserSamples;
     }
     Samples.getParserSamples = getParserSamples;
+    function readSampleFileWiktionaryEnHouse() {
+        return fs_1.readFileSync('./sample-data/wiktionary-en-house.wm', 'utf8');
+    }
+    Samples.readSampleFileWiktionaryEnHouse = readSampleFileWiktionaryEnHouse;
 })(Samples = exports.Samples || (exports.Samples = {}));
 //# sourceMappingURL=samples.js.map

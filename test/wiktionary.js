@@ -4,7 +4,9 @@
 var assert = require('chai').assert;
 var wiktionary = require('../jison/wiktionary.js');
 var prettyjson = require('prettyjson');
-var parserSamples = require('../sample-data/samples').Samples.getParserSamples();
+var jsonSelect = require('JSONSelect');
+var samples = require('../sample-data/samples').Samples;
+var parserSamples = samples.getParserSamples();
 
 describe('Wiktionary', function () {
     describe('Parsing', function () {
@@ -17,8 +19,29 @@ describe('Wiktionary', function () {
                 var ast = wiktionary.parse(text);
                 console.log(prettyjson.render(ast)+'\n');
                 assert.isObject(ast, 'Test Parses to Object: "'+text.substr(0,20)+'"');
+
+                if (test[2]) {
+                    test[2].forEach(function(select){
+                        var r = jsonSelect.match(select.s, ast);
+                        assert.deepEqual(r, select.e);
+                    });
+                }
+
             });
 
+        });
+
+    });
+
+    describe('Parsing Mark Up Files', function () {
+        it('should parse sample markup files', function () {
+
+            var text = samples.readSampleFileWiktionaryEnHouse();
+
+            console.log('Parse Wiktionary En House \n');
+            var ast = wiktionary.parse(text);
+            console.log(prettyjson.render(ast).substr(0,192)+'\n');
+            assert.isObject(ast, 'Test Parses to Object: "'+text.substr(0,20)+'"');
         });
 
     });

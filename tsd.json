@@ -9,7 +9,7 @@
       "commit": "5e960679e6f9ae6ce905b1db0ad36fc189cd2eca"
     },
     "node/node.d.ts": {
-      "commit": "5e960679e6f9ae6ce905b1db0ad36fc189cd2eca"
+      "commit": "dc9dabe74a5be62613b17a3605309783a12ff28a"
     },
     "express/express.d.ts": {
       "commit": "5e960679e6f9ae6ce905b1db0ad36fc189cd2eca"
@@ -27,10 +27,10 @@
       "commit": "5e960679e6f9ae6ce905b1db0ad36fc189cd2eca"
     },
     "form-data/form-data.d.ts": {
-      "commit": "5e960679e6f9ae6ce905b1db0ad36fc189cd2eca"
+      "commit": "dc9dabe74a5be62613b17a3605309783a12ff28a"
     },
     "request/request.d.ts": {
-      "commit": "5e960679e6f9ae6ce905b1db0ad36fc189cd2eca"
+      "commit": "dc9dabe74a5be62613b17a3605309783a12ff28a"
     },
     "mocha/mocha.d.ts": {
       "commit": "1da639a106527e0c4010b354a1efe52a3059a291"
@@ -40,6 +40,12 @@
     },
     "assertion-error/assertion-error.d.ts": {
       "commit": "1da639a106527e0c4010b354a1efe52a3059a291"
+    },
+    "bluebird/bluebird.d.ts": {
+      "commit": "dc9dabe74a5be62613b17a3605309783a12ff28a"
+    },
+    "request-promise/request-promise.d.ts": {
+      "commit": "dc9dabe74a5be62613b17a3605309783a12ff28a"
     }
   }
 }

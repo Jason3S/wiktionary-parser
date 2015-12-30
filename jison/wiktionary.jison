@@ -11,18 +11,13 @@ PlaneText               [^|[\]*#:;<>='{}\n]
 SPACE                   [ \t]
 NL                      \n
 
-%options flex
+/*
+% options flex
+*/
 
 %%
 
 
-(\r|\n|\n\r|\r\n)                   %{
-                                        if (yylloc.first_column)
-                                            return 'NEWLINE'
-                                        else
-                                            return 'EMPTY_LINE';
-                                    %}
-{PlaneText}+                        return 'TEXT'
 {SPACE}*[=]+{SPACE}*(\n|$)          return 'H_END'
 {SPACE}*[=]{1,5}{SPACE}*            %{
                                         if (yylloc.first_column) {
@@ -31,9 +26,16 @@ NL                      \n
                                             return 'H'+yytext.trim().length+'_BEG';
                                         }
                                     %}
-[']                                 return 'S_QUOTE'
+(\r|\n|\n\r|\r\n)                   %{
+                                        if (yylloc.first_column)
+                                            return 'NEWLINE'
+                                        else
+                                            return 'EMPTY_LINE';
+                                    %}
 <<EOF>>                             return 'EOF'
-.                                   return 'INVALID'
+{PlaneText}+                        return 'TEXT'
+[']                                 return 'TEXT'
+.                                   return 'TEXT'
 
 /lex
 
@@ -57,9 +59,9 @@ NL                      \n
 
 wiki-page
     : article end-of-file
-        { return {t: 'wiki-page', c:[$1]};}
+        { return {t: 'wiki-page', c:[$1, $2]};}
     | end-of-file
-        { return {t: 'wiki-page', c:[]};}
+        { return {t: 'wiki-page', c:[$1]};}
     ;
 
 article
@@ -68,28 +70,18 @@ article
     ;
 
 article-content
-    : article-content paragraphs
-        { $1.c.push($2); $$ = $1; }
-    | article-content sections
-        { $1.c.push($2); $$ = $1; }
-    | sections
+    : sections
         { $$ = {t: 'article', c:[$1]};}
     | paragraphs
         { $$ = {t: 'article', c:[$1]};}
+    | article-content paragraphs
+        { $1.c.push($2); $$ = $1; }
+    | article-content sections
+        { $1.c.push($2); $$ = $1; }
     ;
 
 sections
-    : sections section1
-        { $1.c.push($2); $$ = $1; }
-    | sections section2
-        { $1.c.push($2); $$ = $1; }
-    | sections section3
-        { $1.c.push($2); $$ = $1; }
-    | sections section4
-        { $1.c.push($2); $$ = $1; }
-    | sections section5
-        { $1.c.push($2); $$ = $1; }
-    | section1
+    : section1
         { $$ = {t: 'sections', c:[$1]}; }
     | section2
         { $$ = {t: 'sections', c:[$1]}; }
@@ -99,6 +91,16 @@ sections
         { $$ = {t: 'sections', c:[$1]}; }
     | section5
         { $$ = {t: 'sections', c:[$1]}; }
+    | sections section1
+        { $1.c.push($2); $$ = $1; }
+    | sections section2
+        { $1.c.push($2); $$ = $1; }
+    | sections section3
+        { $1.c.push($2); $$ = $1; }
+    | sections section4
+        { $1.c.push($2); $$ = $1; }
+    | sections section5
+        { $1.c.push($2); $$ = $1; }
     ;
 
 section1
@@ -109,22 +111,12 @@ section1
     ;
 
 section1-title
-    : H1_BEG TEXT H_END
+    : H1_BEG text H_END
         { $$ = {t: 'section1-title', c:[$2]}; }
     ;
 
 section1-content
-    : section1-content paragraphs
-        { $1.c.push($2); $$ = $1; }
-    | section1-content section2
-        { $1.c.push($2); $$ = $1; }
-    | section1-content section3
-        { $1.c.push($2); $$ = $1; }
-    | section1-content section4
-        { $1.c.push($2); $$ = $1; }
-    | section1-content section5
-        { $1.c.push($2); $$ = $1; }
-    | paragraphs
+    : paragraphs
         { $$ = {t: 'section1-content', c:[$1]}; }
     | section2
         { $$ = {t: 'section1-content', c:[$1]}; }
@@ -134,6 +126,16 @@ section1-content
         { $$ = {t: 'section1-content', c:[$1]}; }
     | section5
         { $$ = {t: 'section1-content', c:[$1]}; }
+    | section1-content paragraphs
+        { $1.c.push($2); $$ = $1; }
+    | section1-content section2
+        { $1.c.push($2); $$ = $1; }
+    | section1-content section3
+        { $1.c.push($2); $$ = $1; }
+    | section1-content section4
+        { $1.c.push($2); $$ = $1; }
+    | section1-content section5
+        { $1.c.push($2); $$ = $1; }
     ;
 
 section2
@@ -144,20 +146,12 @@ section2
     ;
 
 section2-title
-    : H2_BEG TEXT H_END
+    : H2_BEG text H_END
         { $$ = {t: 'section2-title', c:[$2]}; }
     ;
 
 section2-content
-    : section2-content paragraphs
-        { $1.c.push($2); $$ = $1; }
-    | section2-content section3
-        { $1.c.push($2); $$ = $1; }
-    | section2-content section4
-        { $1.c.push($2); $$ = $1; }
-    | section2-content section5
-        { $1.c.push($2); $$ = $1; }
-    | paragraphs
+    : paragraphs
         { $$ = {t: 'section2-content', c:[$1]}; }
     | section3
         { $$ = {t: 'section2-content', c:[$1]}; }
@@ -165,6 +159,14 @@ section2-content
         { $$ = {t: 'section2-content', c:[$1]}; }
     | section5
         { $$ = {t: 'section2-content', c:[$1]}; }
+    | section2-content paragraphs
+        { $1.c.push($2); $$ = $1; }
+    | section2-content section3
+        { $1.c.push($2); $$ = $1; }
+    | section2-content section4
+        { $1.c.push($2); $$ = $1; }
+    | section2-content section5
+        { $1.c.push($2); $$ = $1; }
     ;
 
 section3
@@ -175,23 +177,23 @@ section3
     ;
 
 section3-title
-    : H3_BEG TEXT H_END
+    : H3_BEG text H_END
         { $$ = {t: 'section3-title', c:[$2]}; }
     ;
 
 section3-content
-    : section3-content paragraphs
-        { $1.c.push($2); $$ = $1; }
-    | section3-content section4
-        { $1.c.push($2); $$ = $1; }
-    | section3-content section5
-        { $1.c.push($2); $$ = $1; }
-    | paragraphs
+    : paragraphs
         { $$ = {t: 'section3-content', c:[$1]}; }
     | section4
         { $$ = {t: 'section3-content', c:[$1]}; }
     | section5
         { $$ = {t: 'section3-content', c:[$1]}; }
+    | section3-content paragraphs
+        { $1.c.push($2); $$ = $1; }
+    | section3-content section4
+        { $1.c.push($2); $$ = $1; }
+    | section3-content section5
+        { $1.c.push($2); $$ = $1; }
     ;
 
 section4
@@ -202,19 +204,19 @@ section4
     ;
 
 section4-title
-    : H4_BEG TEXT H_END
+    : H4_BEG text H_END
         { $$ = {t: 'section4-title', c:[$2]}; }
     ;
 
 section4-content
-    : section4-content paragraphs
-        { $1.c.push($2); $$ = $1; }
-    | section4-content section5
-        { $1.c.push($2); $$ = $1; }
-    | paragraphs
+    : paragraphs
         { $$ = {t: 'section4-content', c:[$1]}; }
     | section5
         { $$ = {t: 'section4-content', c:[$1]}; }
+    | section4-content paragraphs
+        { $1.c.push($2); $$ = $1; }
+    | section4-content section5
+        { $1.c.push($2); $$ = $1; }
     ;
 
 section5
@@ -225,31 +227,31 @@ section5
     ;
 
 section5-title
-    : H5_BEG TEXT H_END
+    : H5_BEG text H_END
         { $$ = {t: 'section5-title', c:[$2]}; }
     ;
 
 section5-content
-    : section5-content paragraphs
-        { $1.c.push($2); $$ = $1; }
-    | paragraphs
+    : paragraphs
         { $$ = {t: 'section5-content', c:[$1]}; }
+    | section5-content paragraphs
+        { $1.c.push($2); $$ = $1; }
     ;
 
 paragraphs
-    : paragraphs paragraph
-        { $1.c.push($2); $$ = $1; }
-    | paragraph
+    : paragraph
         { $$ = {t: 'paragraphs', c:[$1]};}
+    | paragraphs paragraph
+        { $1.c.push($2); $$ = $1; }
     ;
 
 paragraph
-    : blank-line lines-of-text
-        { $$ = {t: 'paragraph', c:[$1, $2]};}
-    | lines-of-text
+    : lines-of-text
         { $$ = {t: 'paragraph', c:[$1]};}
     | blank-line
         { $$ = {t: 'paragraph', c:[$1]};}
+    | blank-line lines-of-text
+        { $$ = {t: 'paragraph', c:[$1, $2]};}
     ;
 
 lines-of-text
@@ -267,24 +269,25 @@ line-of-text
     ;
 
 text
-    : text rich-text
+    : bold-text
+        { $$ = {t: 'text', v: $1}; }
+    | italic-text
+        { $$ = {t: 'text', v: $1}; }
+    | plain-text
+        { $$ = {t: 'text', v: $1}; }
+    | text bold-text
         { $1.c.push($2); $$ = $1; }
-    | rich-text
-        { $$ = {t: 'text', c:[$1]}; }
+    | text italic-text
+        { $1.c.push($2); $$ = $1; }
+    | text plain-text
+        { $1.c.push($2); $$ = $1; }
     ;
 
 plain-text
     : TEXT
         { $$ = {t: 'plain-text', v: $1}; }
-    ;
-
-rich-text
-    : bold-text
-        { $$ = {t: 'rich-text', v: $1}; }
-    | italic-text
-        { $$ = {t: 'rich-text', v: $1}; }
-    | plain-text
-        { $$ = {t: 'rich-text', v: $1}; }
+    | plain-text TEXT
+        { $1.v += $2; $$ = $1; }
     ;
 
 italic-text

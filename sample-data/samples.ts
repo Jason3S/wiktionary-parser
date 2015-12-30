@@ -1,13 +1,14 @@
+import {readFileSync} from "fs";
 /**
  * Created by jasondent on 24/12/2015.
  */
 
 export module Samples {
-    var parserSamples:string[][] = [
-        ['Empty String', ``],
-        ['New Line', '\n'],
-        ['Empty Lines', '\n\n\n\n\n'],
-        ['Single Word', 'Hello'],
+    var parserSamples:any[][] = [
+        ['Empty String', ``, [{s:'.t', e: ['wiki-page', 'eof']}]],
+        ['New Line', '\n', [{s:'.t', e: ['wiki-page', 'article', 'paragraphs', 'paragraph', 'blank-line', 'eof']}]],
+        ['Empty Lines', '\n\n\n\n\n', [{s:'.t:val("blank-line")', e: ['blank-line', 'blank-line', 'blank-line', 'blank-line', 'blank-line']}]],
+        ['Single Word', 'Hello', [{s:'.t:val("plain-text") ~ .v', e: ['Hello']}]],
         ['Word, New Line', 'Word\n'],
         ['New Line, Word', '\nWord'],
         ['Sentence', 'The quick red fox jumped over the lazy brown dog.'],
@@ -53,5 +54,9 @@ Some more
 
     export function getParserSamples() {
         return parserSamples;
+    }
+
+    export function readSampleFileWiktionaryEnHouse() {
+        return readFileSync('./sample-data/wiktionary-en-house.wm', 'utf8');
     }
 }

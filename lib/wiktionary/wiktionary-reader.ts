@@ -2,7 +2,8 @@
  * Created by jasondent on 23/12/2015.
  */
 
-import request = require('request');
+var _ = require('lodash');
+import request = require('request-promise');
 
 export function fetchWord(lang: string, word: string) {
 
@@ -16,14 +17,9 @@ export function fetchWord(lang: string, word: string) {
 
     var uri = 'http://' + lang + '.wiktionary.org/w/api.php?';
 
-    var r = request(
-        {
-            uri : uri,
-            qs: params,
-        }, function (error, response, body) {
-            if (!error && response.statusCode == 200) {
-                console.log(body); // Show the HTML for the Modulus homepage.
-            }
-        });
+    var url = uri + _(params)
+            .map(function(value:string, key:string){ return encodeURIComponent(key) + '=' + encodeURIComponent(value); })
+            .join('&');
 
+    return request(url);
 }
