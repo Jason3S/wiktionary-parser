@@ -14,7 +14,7 @@ SMILE							[a-z]+
 
 <header>/[\n]	    %{ this.popState(); return 'HEADER_END'; %}
 <header>$           %{ this.popState(); return 'HEADER_END'; %}
-[\n]("!")	    %{ this.begin('header'); return  'HEADER_START'; %}
+[\n]("!")	        %{ this.begin('header'); return  'HEADER_START'; %}
 <<EOF>>             return 'EOF'
 (.)                 return 'TEXT'
 (\n)                return 'TEXT'

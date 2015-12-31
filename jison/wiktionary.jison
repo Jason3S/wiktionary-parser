@@ -15,6 +15,8 @@ NL                      \n
 % options flex
 */
 
+%s template
+
 %%
 
 
@@ -32,6 +34,13 @@ NL                      \n
                                         else
                                             return 'EMPTY_LINE';
                                     %}
+[{][{]	                            %{
+                                        this.begin('template'); return 'TEMPLATE_START';
+                                    %}
+<template>[}][}]                    %{
+                                        this.popState(); return 'TEMPLATE_END';
+                                    %}
+<template>[|]                       return 'TEMPLATE_PARAM_SEPARATOR'
 <<EOF>>                             return 'EOF'
 {PlaneText}+                        return 'TEXT'
 [']                                 return 'TEXT'
@@ -262,10 +271,15 @@ lines-of-text
     ;
 
 line-of-text
-    : text line-ending
+    : text-content line-ending
         { $$ = {t: 'line-of-text', c:[$1, $2]}; }
-    | text
+    | text-content
         { $$ = {t: 'line-of-text', c:[$1]}; }
+    ;
+
+text-content
+    : text
+    | template
     ;
 
 text
@@ -347,6 +361,44 @@ blank-lines
 blank-line
     : EMPTY_LINE
         { $$ = {t: 'blank-line'};}
+    ;
+
+template
+    : TEMPLATE_START template-name TEMPLATE_END
+        { $$ = {t: 'template', name: $2, params: [] }; }
+    | TEMPLATE_START template-name template-params TEMPLATE_END
+        { $$ = {t: 'template', name: $2, params: $3 }; }
+    ;
+
+template-name
+    : plain-text
+        { $$ = $1; }
+    | NEWLINE plain-text
+        { $$ = $2; }
+    | plain-text NEWLINE
+        { $$ = $1; }
+    ;
+
+template-params
+    : TEMPLATE_PARAM_SEPARATOR template-param
+        { $$ = [$2]; }
+    | TEMPLATE_PARAM_SEPARATOR
+        { $$ = [null]; }
+    | template-params TEMPLATE_PARAM_SEPARATOR template-param
+        { $1.push($3); $$ = $1; }
+    | template-params TEMPLATE_PARAM_SEPARATOR
+        { $1.push(null); $$ = $1; }
+    ;
+
+template-param
+    : text-content
+        { $$ = {t: 'template-param', c: [$1] }; }
+    | NEWLINE
+        { $$ = {t: 'template-param', c: [] }; }
+    | template-param text-content
+        { $1.c.push($2); $$ = $1; }
+    | template-param NEWLINE
+        { $$ = $1; }
     ;
 
 end-of-file
