@@ -5,10 +5,10 @@ var fs_1 = require("fs");
 var Samples;
 (function (Samples) {
     var parserSamples = [
-        ['Empty String', "", [{ s: '.t', e: ['wiki-page', 'eof'] }]],
-        ['New Line', '\n', [{ s: '.t', e: ['wiki-page', 'article', 'paragraphs', 'paragraph', 'blank-line', 'eof'] }]],
-        ['Empty Lines', '\n\n\n\n\n', [{ s: '.t:val("blank-line")', e: ['blank-line', 'blank-line', 'blank-line', 'blank-line', 'blank-line'] }]],
-        ['Single Word', 'Hello', [{ s: '.t:val("plain-text") ~ .v', e: ['Hello'] }]],
+        ['Empty String', "", [{ s: '.t', jp: '$..t', e: ['wiki-page', 'eof'] }]],
+        ['New Line', '\n', [{ s: '.t', jp: '$..t', e: ['wiki-page', 'article', 'paragraphs', 'paragraph', 'blank-line', 'eof'] }]],
+        ['Empty Lines', '\n\n\n\n\n', [{ s: '.t:val("blank-line")', jp: '$..[?(@.t=="blank-line")].t', e: ['blank-line', 'blank-line', 'blank-line', 'blank-line', 'blank-line'] }]],
+        ['Single Word', 'Hello', [{ s: '.t:val("plain-text") ~ .v', jp: '$..[?(@.t=="plain-text")].v', e: ['Hello'] }]],
         ['Word, New Line', 'Word\n'],
         ['New Line, Word', '\nWord'],
         ['Sentence', 'The quick red fox jumped over the lazy brown dog.'],

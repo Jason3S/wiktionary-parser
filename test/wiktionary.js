@@ -5,6 +5,7 @@ var assert = require('chai').assert;
 var wiktionary = require('../jison/wiktionary.js');
 var prettyjson = require('prettyjson');
 var jsonSelect = require('JSONSelect');
+var jasonPath = require('jsonpath');
 var samples = require('../sample-data/samples').Samples;
 var parserSamples = samples.getParserSamples();
 
@@ -22,8 +23,15 @@ describe('Wiktionary', function () {
 
                 if (test[2]) {
                     test[2].forEach(function(select){
-                        var r = jsonSelect.match(select.s, ast);
-                        assert.deepEqual(r, select.e);
+                        var r;
+                        if (select.s) {
+                            r = jsonSelect.match(select.s, ast);
+                            assert.deepEqual(r, select.e);
+                        }
+                        if (select.jp) {
+                            r = jasonPath.query(ast, select.jp);
+                            assert.deepEqual(r, select.e);
+                        }
                     });
                 }
 
