@@ -133,27 +133,20 @@ section1-title
     ;
 
 section1-content
-    : paragraphs
+    : section1-content-item
         { $$ = {t: 'section1-content', c:[$1]}; }
-    | section2
-        { $$ = {t: 'section1-content', c:[$1]}; }
-    | section3
-        { $$ = {t: 'section1-content', c:[$1]}; }
-    | section4
-        { $$ = {t: 'section1-content', c:[$1]}; }
-    | section5
-        { $$ = {t: 'section1-content', c:[$1]}; }
-    | section1-content paragraphs
-        { $1.c.push($2); $$ = $1; }
-    | section1-content section2
-        { $1.c.push($2); $$ = $1; }
-    | section1-content section3
-        { $1.c.push($2); $$ = $1; }
-    | section1-content section4
-        { $1.c.push($2); $$ = $1; }
-    | section1-content section5
+    | section1-content section1-content-item
         { $1.c.push($2); $$ = $1; }
     ;
+
+section1-content-item
+    : paragraphs
+    | section2
+    | section3
+    | section4
+    | section5
+    ;
+
 
 section2
     : section2-title section2-content
@@ -168,22 +161,17 @@ section2-title
     ;
 
 section2-content
+    : section2-content-item
+        { $$ = {t: 'section2-content', c:[$1]}; }
+    | section2-content section2-content-item
+        { $1.c.push($2); $$ = $1; }
+    ;
+
+section2-content-item
     : paragraphs
-        { $$ = {t: 'section2-content', c:[$1]}; }
     | section3
-        { $$ = {t: 'section2-content', c:[$1]}; }
     | section4
-        { $$ = {t: 'section2-content', c:[$1]}; }
     | section5
-        { $$ = {t: 'section2-content', c:[$1]}; }
-    | section2-content paragraphs
-        { $1.c.push($2); $$ = $1; }
-    | section2-content section3
-        { $1.c.push($2); $$ = $1; }
-    | section2-content section4
-        { $1.c.push($2); $$ = $1; }
-    | section2-content section5
-        { $1.c.push($2); $$ = $1; }
     ;
 
 section3
@@ -199,18 +187,16 @@ section3-title
     ;
 
 section3-content
+    : section3-content-item
+        { $$ = {t: 'section3-content', c:[$1]}; }
+    | section3-content section3-content-item
+        { $1.c.push($2); $$ = $1; }
+    ;
+
+section3-content-item
     : paragraphs
-        { $$ = {t: 'section3-content', c:[$1]}; }
     | section4
-        { $$ = {t: 'section3-content', c:[$1]}; }
     | section5
-        { $$ = {t: 'section3-content', c:[$1]}; }
-    | section3-content paragraphs
-        { $1.c.push($2); $$ = $1; }
-    | section3-content section4
-        { $1.c.push($2); $$ = $1; }
-    | section3-content section5
-        { $1.c.push($2); $$ = $1; }
     ;
 
 section4
@@ -226,14 +212,15 @@ section4-title
     ;
 
 section4-content
+    : section4-content-item
+        { $$ = {t: 'section4-content', c:[$1]}; }
+    | section4-content section4-content-item
+        { $1.c.push($2); $$ = $1; }
+    ;
+
+section4-content-item
     : paragraphs
-        { $$ = {t: 'section4-content', c:[$1]}; }
     | section5
-        { $$ = {t: 'section4-content', c:[$1]}; }
-    | section4-content paragraphs
-        { $1.c.push($2); $$ = $1; }
-    | section4-content section5
-        { $1.c.push($2); $$ = $1; }
     ;
 
 section5
@@ -249,10 +236,14 @@ section5-title
     ;
 
 section5-content
-    : paragraphs
+    : section5-content-item
         { $$ = {t: 'section5-content', c:[$1]}; }
-    | section5-content paragraphs
+    | section5-content section5-content-item
         { $1.c.push($2); $$ = $1; }
+    ;
+
+section5-content-item
+    : paragraphs
     ;
 
 paragraphs
