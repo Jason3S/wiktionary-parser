@@ -353,7 +353,7 @@ bold-text-inner
 
 line-ending
     : NEWLINE
-        { $$ = {t: 'line-end'};}
+        { $$ = {t: 'line-end', v: $1};}
     ;
 
 blank-lines
@@ -365,23 +365,23 @@ blank-lines
 
 blank-line
     : EMPTY_LINE
-        { $$ = {t: 'blank-line'};}
+        { $$ = {t: 'blank-line', v: $1};}
     ;
 
 template
     : TEMPLATE_START template-name TEMPLATE_END
-        { $$ = {t: 'template', name: $2, params: [] }; }
+        { $$ = {t: 'template', c: [$2]}; }
     | TEMPLATE_START template-name template-params TEMPLATE_END
-        { $$ = {t: 'template', name: $2, params: $3 }; }
+        { $$ = {t: 'template', c: [$2].concat($3) }; }
     ;
 
 template-name
     : plain-text
-        { $$ = $1; }
+        { $$ = {t: 'template-name', c: [$1] }; }
     | NEWLINE plain-text
-        { $$ = $2; }
+        { $$ = {t: 'template-name', c: [$2] }; }
     | plain-text NEWLINE
-        { $$ = $1; }
+        { $$ = {t: 'template-name', c: [$1] }; }
     ;
 
 template-params
@@ -396,15 +396,18 @@ template-params
     ;
 
 template-param
-    : text-content
+    : template-param-content
         { $$ = {t: 'template-param', c: [$1] }; }
-    | NEWLINE
-        { $$ = {t: 'template-param', c: [] }; }
-    | template-param text-content
+    | template-param template-param-content
         { $1.c.push($2); $$ = $1; }
-    | template-param NEWLINE
-        { $$ = $1; }
     ;
+
+template-param-content
+    : text-content
+    | line-ending
+    | blank-line
+    ;
+
 
 link
     : LINK_START link-ref LINK_END

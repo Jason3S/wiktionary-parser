@@ -40,6 +40,20 @@ var Samples;
         ['Simple Link', '[[a|b]]', [{ jp: '$..[?(@.t=="link")]..v', e: ['a', 'b'] }]],
         ['Simple Link', '[[a]]', [{ jp: '$..[?(@.t=="link")]..v', e: ['a'] }]],
         ['Simple Link', '[[Image:Muybridge horse walking animated.gif|thumb|right|A horse walking.]]', [{ jp: '$..[?(@.t=="link")]..v', e: ['Image:Muybridge horse walking animated.gif', 'thumb', 'right', 'A horse walking.'] }]],
+        ['Simple Template', "{{qualifier|long walk}}",
+            [
+                { jp: '$..[?(@.t=="template")]..v', e: ['qualifier', 'long walk'] },
+                { jp: '$..[?(@.t=="template-name")]..v', e: ['qualifier'] },
+                { jp: '$..[?(@.t=="template-param")]..v', e: ['long walk'] },
+            ]
+        ],
+        ['Translation Template', "{{t+|ca|passeig|m}}",
+            [
+                { jp: '$..[?(@.t=="template")]..v', e: ['t+', 'ca', 'passeig', 'm'] },
+                { jp: '$..[?(@.t=="template-name")]..v', e: ['t+'] },
+                { jp: '$..[?(@.t=="template-param")]..v', e: ['ca', 'passeig', 'm'] },
+            ]
+        ],
     ];
     function getParserSamples() {
         return parserSamples;
