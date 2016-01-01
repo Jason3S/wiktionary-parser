@@ -32,6 +32,7 @@ export module Samples {
         ['Italics(Bold Text)', "'''''Bold Italics''' Italics''"],
         ['Bold(Italics Text)', "'''''Italics Bold'' Bold'''"],
         ['Bold(Italics Text Italics)', "'''''Italics Bold'' Bold ''Italics Bold'''''"],
+        ['Unicode Escape Sequence', `\\u0584\\u0561\\u0575`, [{jp:'$..v', e: ['\u0584\u0561\u0575']}]],
         ['Section 2', '== Section 2 ==\nA bit of text.\nSome more\n'],
         ['Section 1,2', '= Title =\n== Section 2==\nA bit of text.\nSome more\n'],
         ['Section 1,2', '= Title =\nInfo.\n== Section 2==\nA bit of text.\nSome more\n'],
@@ -50,6 +51,9 @@ Some more
 ''Some text''.
 
 `],
+        ['Simple Link', '[[a|b]]', [{jp:'$..[?(@.t=="link")]..v', e: ['a','b']}]],
+        ['Simple Link', '[[a]]', [{jp:'$..[?(@.t=="link")]..v', e: ['a']}]],
+        ['Simple Link', '[[Image:Muybridge horse walking animated.gif|thumb|right|A horse walking.]]', [{jp:'$..[?(@.t=="link")]..v', e: ['Image:Muybridge horse walking animated.gif', 'thumb', 'right', 'A horse walking.']}]],
     ];
 
     export function getParserSamples() {

@@ -15,7 +15,7 @@ NL                      \n
 % options flex
 */
 
-%s template
+%s template link
 
 %%
 
@@ -41,6 +41,14 @@ NL                      \n
                                         this.popState(); return 'TEMPLATE_END';
                                     %}
 <template>[|]                       return 'TEMPLATE_PARAM_SEPARATOR'
+[[][[]	                            %{
+                                        this.begin('link'); return 'LINK_START';
+                                    %}
+<link>[\]][\]]                      %{
+                                        this.popState(); return 'LINK_END';
+                                    %}
+<link>[|]                           return 'LINK_PARAM_SEPARATOR'
+"\\u"[0-9a-fA-F]{4}                 return 'UNICODE'
 <<EOF>>                             return 'EOF'
 {PlaneText}+                        return 'TEXT'
 [']                                 return 'TEXT'
@@ -280,28 +288,34 @@ line-of-text
 text-content
     : text
     | template
+    | link
     ;
 
 text
-    : bold-text
-        { $$ = {t: 'text', v: $1}; }
-    | italic-text
-        { $$ = {t: 'text', v: $1}; }
-    | plain-text
-        { $$ = {t: 'text', v: $1}; }
-    | text bold-text
-        { $1.c.push($2); $$ = $1; }
-    | text italic-text
-        { $1.c.push($2); $$ = $1; }
-    | text plain-text
+    : rich-text
+        { $$ = {t: 'text', c: $1}; }
+    | text rich-text
         { $1.c.push($2); $$ = $1; }
     ;
 
+rich-text
+    : bold-text
+    | italic-text
+    | plain-text
+    ;
+
 plain-text
-    : TEXT
+    : text-constant
         { $$ = {t: 'plain-text', v: $1}; }
-    | plain-text TEXT
+    | plain-text text-constant
         { $1.v += $2; $$ = $1; }
+    ;
+
+text-constant
+    : TEXT
+        { $$ = $1 }
+    | UNICODE
+        { $$ = JSON.parse('"'+$1+'"'); }
     ;
 
 italic-text
@@ -398,6 +412,33 @@ template-param
     | template-param text-content
         { $1.c.push($2); $$ = $1; }
     | template-param NEWLINE
+        { $$ = $1; }
+    ;
+
+link
+    : LINK_START link-ref LINK_END
+        { $$ = {t: 'link', c:[$2] }; }
+    | LINK_START link-ref link-params LINK_END
+        { $$ = {t: 'link', c: [$2].concat($3) }; }
+    ;
+
+link-ref
+    : plain-text
+        { $$ = $1; }
+    ;
+
+link-params
+    : LINK_PARAM_SEPARATOR link-param
+        { $$ = [$2]; }
+    | LINK_PARAM_SEPARATOR
+        { $$ = [null]; }
+    | link-params LINK_PARAM_SEPARATOR link-param
+        { $1.push($3); $$ = $1; }
+    | link-params LINK_PARAM_SEPARATOR
+        { $1.push(null); $$ = $1; }
+    ;
+link-param
+    : text
         { $$ = $1; }
     ;
 

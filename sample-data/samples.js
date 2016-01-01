@@ -5,6 +5,7 @@ var fs_1 = require("fs");
 var Samples;
 (function (Samples) {
     var parserSamples = [
+        ['Unicode Escape Sequence', "\\u0584\\u0561\\u0575", [{ jp: '$..v', e: ['\u0584\u0561\u0575'] }]],
         ['Empty String', "", [{ s: '.t', jp: '$..t', e: ['wiki-page', 'eof'] }]],
         ['New Line', '\n', [{ s: '.t', jp: '$..t', e: ['wiki-page', 'article', 'paragraphs', 'paragraph', 'blank-line', 'eof'] }]],
         ['Empty Lines', '\n\n\n\n\n', [{ s: '.t:val("blank-line")', jp: '$..[?(@.t=="blank-line")].t', e: ['blank-line', 'blank-line', 'blank-line', 'blank-line', 'blank-line'] }]],
@@ -36,6 +37,9 @@ var Samples;
         ['Section 1,2', '= Title =\n== Section 2==\nA bit of text.\nSome more\n'],
         ['Section 1,2', '= Title =\nInfo.\n== Section 2==\nA bit of text.\nSome more\n'],
         ['Section 1,2,3,2', "\n= Section 1 =\nA bit about the title\n== Section 1.1 ==\nA bit of text.\n=== Section 1.1.1 ===\nSome more\n== Section 1.2 ==\n== Section 1.3 ==\n=== Section 1.3.1 ===\n== Section 1.4 ==\n==== Section 1.4..1 ====\n''Some text''.\n\n"],
+        ['Simple Link', '[[a|b]]', [{ jp: '$..[?(@.t=="link")]..v', e: ['a', 'b'] }]],
+        ['Simple Link', '[[a]]', [{ jp: '$..[?(@.t=="link")]..v', e: ['a'] }]],
+        ['Simple Link', '[[Image:Muybridge horse walking animated.gif|thumb|right|A horse walking.]]', [{ jp: '$..[?(@.t=="link")]..v', e: ['Image:Muybridge horse walking animated.gif', 'thumb', 'right', 'A horse walking.'] }]],
     ];
     function getParserSamples() {
         return parserSamples;
