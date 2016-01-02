@@ -2,7 +2,8 @@
  * Created by jasondent on 24/12/2015.
  */
 var assert = require('chai').assert;
-var wiktionary = require('../jison/wiktionary.js');
+var wiktionary = require('../jison/wiktionary');
+var wikiAst = require('../lib/wiki-ast');
 var prettyjson = require('prettyjson');
 var jsonSelect = require('JSONSelect');
 var jasonPath = require('jsonpath');
@@ -10,19 +11,24 @@ var samples = require('../sample-data/samples').Samples;
 var parserSamples = samples.getParserSamples();
 
 describe('Wiktionary', function () {
-    describe('Parsing', function () {
-        it('should parse sample markup', function () {
+    "use strict";
 
-            parserSamples.forEach(function(test){
-                var name = test[0];
-                var text = test[1];
+    describe('Parsing', function () {
+        parserSamples.forEach(function(test) {
+            var name = test[0];
+            var text = test[1];
+            var tests = test[2];
+
+            it('should parse: ' + name, function () {
                 console.log('\nTesting '+name+': '+JSON.stringify(text)+'\n');
                 var ast = wiktionary.parse(text);
                 console.log(prettyjson.render(ast)+'\n');
-                assert.isObject(ast, 'Test Parses to Object: "'+text.substr(0,20)+'"');
 
-                if (test[2]) {
-                    test[2].forEach(function(select){
+                assert.isObject(ast, 'Test Parses to Object: "'+text.substr(0,20)+'"');
+                assert.isTrue(wikiAst.validateWikiAbstractSyntaxTree(ast), 'Validate Tree');
+
+                if (tests) {
+                    tests.forEach(function(select){
                         var r;
                         if (select.s) {
                             r = jsonSelect.match(select.s, ast);
@@ -34,11 +40,8 @@ describe('Wiktionary', function () {
                         }
                     });
                 }
-
             });
-
         });
-
     });
 
     describe('Parsing Mark Up Files', function () {

@@ -5,7 +5,69 @@ var fs_1 = require("fs");
 var Samples;
 (function (Samples) {
     var parserSamples = [
-        ['Empty String', "", [{ s: '.t', jp: '$..t', e: ['wiki-page', 'eof'] }]],
+        ['Italics(Text, Bold, Text)', "'' Text '''Bold''' Text''", [
+                { jp: '$..[?(@.t=="bold-text")].t', e: ["bold-text"] },
+                { jp: '$..[?(@.t=="italic-text")].t', e: ["italic-text"] },
+                { jp: '$..[?(@.t=="bold-text")]..v', e: ["Bold"] },
+                { jp: '$..[?(@.t=="italic-text")]..v', e: [' Text ', 'Bold', ' Text'] },
+            ]],
+        ['Bold(Text, Italics, Text)', "''' Text ''Italics'' Text'''", [
+                { jp: '$..[?(@.t=="bold-text")].t', e: ["bold-text"] },
+                { jp: '$..[?(@.t=="italic-text")].t', e: ["italic-text"] },
+                { jp: '$..[?(@.t=="bold-text")]..v', e: [' Text ', 'Italics', ' Text'] },
+                { jp: '$..[?(@.t=="italic-text")]..v', e: ['Italics'] },
+            ]],
+        ['Italics(Bold Text)', "'''''Bold Italics''' Italics''", [
+                { jp: '$..[?(@.t=="bold-text")].t', e: ["bold-text"] },
+                { jp: '$..[?(@.t=="italic-text")].t', e: ["italic-text"] },
+                { jp: '$..[?(@.t=="bold-text")]..v', e: ["Bold Italics"] },
+                { jp: '$..[?(@.t=="italic-text")]..v', e: ["Bold Italics", ' Italics'] },
+            ]],
+        ['Italics', "''Italics Text''", [
+                { jp: '$..v', e: ["Italics Text"] },
+                { jp: '$..[?(@.t=="italic-text")]..v', e: ["Italics Text"] },
+            ]],
+        ['Bold', "'''Bold'''", [
+                { jp: '$..[?(@.t=="bold-text")]..v', e: ["Bold"] },
+            ]],
+        ['Bold Italics', "'''''Bold Italics'''''", [
+                { jp: '$..[?(@.t=="bold-text")].t', e: ["bold-text"] },
+                { jp: '$..[?(@.t=="italic-text")].t', e: ["italic-text"] },
+            ]],
+        ['Bold(Italics Text)', "'''''Italics Bold'' Bold'''", [
+                { jp: '$..[?(@.t=="bold-text")].t', e: ["bold-text"] },
+                { jp: '$..[?(@.t=="italic-text")].t', e: ["italic-text"] },
+                { jp: '$..[?(@.t=="bold-text")]..v', e: ["Italics Bold", ' Bold'] },
+                { jp: '$..[?(@.t=="italic-text")]..v', e: ["Italics Bold"] },
+            ]],
+        ['Bold(Italics Text Italics)', "'''''Italics Bold'' Bold ''Italics Bold'''''", [
+                { jp: '$..[?(@.t=="bold-text")].t', e: ["bold-text"] },
+                { jp: '$..[?(@.t=="italic-text")].t', e: ["italic-text", "italic-text"] },
+                { jp: '$..[?(@.t=="bold-text")]..v', e: ["Italics Bold", ' Bold ', "Italics Bold"] },
+                { jp: '$..[?(@.t=="italic-text")]..v', e: ["Italics Bold", "Italics Bold"] },
+            ]],
+        ['Bold Trailing Quote', "'''Bold''''", [
+                { jp: '$..[?(@.t=="bold-text")].t', e: ["bold-text"] },
+                { jp: '$..[?(@.t=="bold-text")]..v', e: ["Bold'"] },
+            ]],
+        ['Bold Leading Quote', "''''Bold'''", [
+                { jp: '$..[?(@.t=="bold-text")].t', e: ["bold-text"] },
+                { jp: '$..[?(@.t=="bold-text")]..v', e: ["Bold"] },
+                { jp: '$..v', e: ["'", "Bold"] },
+            ]],
+        ['Bold Extra Quotes', "''''Bold''''", [
+                { jp: '$..[?(@.t=="bold-text")].t', e: ["bold-text"] },
+                { jp: '$..[?(@.t=="bold-text")]..v', e: ["Bold'"] },
+                { jp: '$..v', e: ["'", "Bold'"] },
+            ]],
+        ['Single Quote', "how's", []],
+        ['No Wiki', "<nowiki>''text''</nowiki>''text''", [
+                { jp: '$..v', e: ["''text''", "text"] },
+            ]],
+        ['No Wiki', "<nowiki>==text==</nowiki>''text''", [
+                { jp: '$..v', e: ["==text==", "text"] },
+            ]],
+        ['Empty String', "", [{ jp: '$..t', e: ['wiki-page', 'eof'] }]],
         ['New Line', '\n', [{ s: '.t', jp: '$..t', e: ['wiki-page', 'article', 'paragraphs', 'paragraph', 'blank-line', 'eof'] }]],
         ['Empty Lines', '\n\n\n\n\n', [{ s: '.t:val("blank-line")', jp: '$..[?(@.t=="blank-line")].t', e: ['blank-line', 'blank-line', 'blank-line', 'blank-line', 'blank-line'] }]],
         ['Single Word', 'Hello', [{ s: '.t:val("plain-text") ~ .v', jp: '$..[?(@.t=="plain-text")].v', e: ['Hello'] }]],
@@ -26,12 +88,6 @@ var Samples;
         ['Section 4', '==== Title ====\ntext'],
         ['Section 5', '===== Title =====\ntext'],
         ['Multiple Paragraphs', 'Paragraph 1 Line 1.\nParagraph 1 Line 2.\n\nParagraph 2 Line 1.\nParagraph 2 Line 2.\n\n'],
-        ['Italics', "''Italics Text''"],
-        ['Bold', "'''Bold'''"],
-        ['Bold Italics', "'''''Bold Italics'''''"],
-        ['Italics(Bold Text)', "'''''Bold Italics''' Italics''"],
-        ['Bold(Italics Text)', "'''''Italics Bold'' Bold'''"],
-        ['Bold(Italics Text Italics)', "'''''Italics Bold'' Bold ''Italics Bold'''''"],
         ['Unicode Escape Sequence', "\\u0584\\u0561\\u0575", [{ jp: '$..v', e: ['\u0584\u0561\u0575'] }]],
         ['Section 2', '== Section 2 ==\nA bit of text.\nSome more\n'],
         ['Section 1,2', '= Title =\n== Section 2==\nA bit of text.\nSome more\n'],
@@ -40,20 +96,16 @@ var Samples;
         ['Simple Link', '[[a|b]]', [{ jp: '$..[?(@.t=="link")]..v', e: ['a', 'b'] }]],
         ['Simple Link', '[[a]]', [{ jp: '$..[?(@.t=="link")]..v', e: ['a'] }]],
         ['Simple Link', '[[Image:Muybridge horse walking animated.gif|thumb|right|A horse walking.]]', [{ jp: '$..[?(@.t=="link")]..v', e: ['Image:Muybridge horse walking animated.gif', 'thumb', 'right', 'A horse walking.'] }]],
-        ['Simple Template', "{{qualifier|long walk}}",
-            [
+        ['Simple Template', "{{qualifier|long walk}}", [
                 { jp: '$..[?(@.t=="template")]..v', e: ['qualifier', 'long walk'] },
                 { jp: '$..[?(@.t=="template-name")]..v', e: ['qualifier'] },
                 { jp: '$..[?(@.t=="template-param")]..v', e: ['long walk'] },
-            ]
-        ],
-        ['Translation Template', "{{t+|ca|passeig|m}}",
-            [
+            ]],
+        ['Translation Template', "{{t+|ca|passeig|m}}", [
                 { jp: '$..[?(@.t=="template")]..v', e: ['t+', 'ca', 'passeig', 'm'] },
                 { jp: '$..[?(@.t=="template-name")]..v', e: ['t+'] },
                 { jp: '$..[?(@.t=="template-param")]..v', e: ['ca', 'passeig', 'm'] },
-            ]
-        ],
+            ]],
     ];
     function getParserSamples() {
         return parserSamples;

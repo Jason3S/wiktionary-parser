@@ -7,15 +7,19 @@ $ jison wiktionary.jison -m commonjs -p lalr
 %lex
 
 WikiMarkupCharacters    [|[\]*#:;<>='{}]
-PlaneText               [^|[\]*#:;<>='{}\n]
+PlainText               [^|[\]*#:;<>='{}\n]
 SPACE                   [ \t]
 NL                      \n
+Italics                 "''"
+Bold                    "'''"
+BoldItalics             "'''''"
 
 /*
 % options flex
 */
 
 %s template link
+%x nowiki
 
 %%
 
@@ -48,10 +52,25 @@ NL                      \n
                                         this.popState(); return 'LINK_END';
                                     %}
 <link>[|]                           return 'LINK_PARAM_SEPARATOR'
+
+
+[<]\s*"nowiki"\s*[>]	            %{  /* <nowiki> */
+                                        this.begin('nowiki'); return 'NO_WIKI_START';
+                                    %}
+<nowiki>[<]\s*[/]"nowiki"\s*[>]     %{ /* </nowiki> */
+                                        this.popState(); return 'NO_WIKI_END';
+                                    %}
+<nowiki>.                           return 'TEXT'
+
+[']+/{BoldItalics}($|[^'])          return 'TEXT'
+{BoldItalics}                       return 'BOLD_ITALICS'
+[']/{Bold}                          return 'TEXT'
+{Bold}                              return 'BOLD'
+{Italics}                           return 'ITALICS'
+[']                                 return 'TEXT'
 "\\u"[0-9a-fA-F]{4}                 return 'UNICODE'
 <<EOF>>                             return 'EOF'
-{PlaneText}+                        return 'TEXT'
-[']                                 return 'TEXT'
+{PlainText}+                        return 'TEXT'
 .                                   return 'TEXT'
 
 /lex
@@ -67,6 +86,8 @@ NL                      \n
 %left section4-content
 %left section5
 %left section5-content
+%left italic-text bold-text
+%left italic-text-inner bold-text-inner
 
 
 %start wiki-page
@@ -284,15 +305,15 @@ text-content
 
 text
     : rich-text
-        { $$ = {t: 'text', c: $1}; }
+        { $$ = {t: 'text', c: [$1]}; }
     | text rich-text
         { $1.c.push($2); $$ = $1; }
     ;
 
 rich-text
-    : bold-text
-    | italic-text
+    : bold-italics-text
     | plain-text
+    | no-wiki
     ;
 
 plain-text
@@ -303,52 +324,97 @@ plain-text
     ;
 
 text-constant
-    : TEXT
+    : raw-text
         { $$ = $1 }
     | UNICODE
         { $$ = JSON.parse('"'+$1+'"'); }
     ;
 
+raw-text
+    : TEXT
+        { $$ = $1 }
+    | raw-text TEXT
+        { $$ = $1 + $2; }
+    ;
+
+bold-italics-content
+    : bold-italics-content-item
+        { $$ = [$1] }
+    | bold-italics-content bold-italics-content-item
+        { $1.push($2); $$ = $1 }
+    ;
+
+bold-italics-content-item
+    : plain-text
+    | no-wiki
+    | link
+    | template
+    ;
+
+bold-content
+    : bold-content-item
+        { $$ = [$1] }
+    | bold-content bold-content-item
+        { $1.push($2); $$ = $1 }
+    ;
+
+bold-content-item
+    : bold-italics-content-item
+    | italic-text-nested
+    ;
+
+italics-content
+    : italics-content-item
+        { $$ = [$1] }
+    | italics-content italics-content-item
+        { $1.push($2); $$ = $1 }
+    ;
+
+italics-content-item
+    : bold-italics-content-item
+    | bold-text-nested
+    ;
+
 italic-text
-    : S_QUOTE S_QUOTE italic-text-inner-text S_QUOTE S_QUOTE
-        { $$ = {t: 'italic-text', c: $3.c}; }
-    ;
-
-italic-text-inner-text
-    : italic-text-inner-text plain-text
-        { $1.c.push($2); $$ = $1; }
-    | italic-text-inner-text bold-text-inner
-        { $1.c.push($2); $$ = $1; }
-    | plain-text
-        { $$ = {t: 'italic-text-inner', c: [$1]}; }
-    | bold-text-inner
-        { $$ = {t: 'italic-text-inner', c: [$1]}; }
-    ;
-
-italic-text-inner
-    : S_QUOTE S_QUOTE plain-text S_QUOTE S_QUOTE
-        { $$ = {t: 'italic-text', c: [$3]}; }
+    : ITALICS italics-content ITALICS
+        { $$ = {t: 'italic-text', c: $2}; }
     ;
 
 bold-text
-    : S_QUOTE S_QUOTE S_QUOTE bold-text-inner-text S_QUOTE S_QUOTE S_QUOTE
-        { $$ = {t: 'bold-text', c: $4.c}; }
+    : BOLD bold-content BOLD
+        { $$ = {t: 'bold-text', c: $2}; }
     ;
 
-bold-text-inner-text
-    : bold-text-inner-text plain-text
-        { $1.c.push($2); $$ = $1; }
-    | bold-text-inner-text italic-text-inner
-        { $1.c.push($2); $$ = $1; }
-    | plain-text
-        { $$ = {t: 'bold-text-inner', c: [$1]}; }
-    | italic-text-inner
-        { $$ = {t: 'bold-text-inner', c: [$1]}; }
+italic-text-nested
+    : ITALICS bold-italics-content ITALICS
+        { $$ = {t: 'italic-text', c: $2}; }
     ;
 
-bold-text-inner
-    : S_QUOTE S_QUOTE S_QUOTE plain-text S_QUOTE S_QUOTE S_QUOTE
-        { $$ = {t: 'bold-text', c: [$4]}; }
+bold-text-nested
+    : BOLD bold-italics-content BOLD
+        { $$ = {t: 'bold-text', c: $2}; }
+    ;
+
+bold-italics-mix
+    : BOLD_ITALICS bold-italics-content BOLD_ITALICS
+        { $$ = {t: 'bold-text', c: [{t: 'italic-text', c: $2}]}; }
+    | BOLD_ITALICS bold-italics-content ITALICS bold-content ITALICS bold-italics-content BOLD_ITALICS
+        { $$ = {t: 'bold-text', c: [{t: 'italic-text', c: $2}].concat($4,[{t: 'italic-text', c: $6}])}; }
+    | BOLD_ITALICS bold-italics-content ITALICS bold-content BOLD
+        { $$ = {t: 'bold-text', c: [{t: 'italic-text', c: $2}].concat($4)}; }
+    | BOLD_ITALICS bold-italics-content BOLD italics-content ITALICS
+        { $$ = {t: 'italic-text', c: [{t: 'bold-text', c: $2}].concat($4)}; }
+    ;
+
+bold-italics-text
+    : bold-italics-mix
+    | italic-text
+    | bold-text
+    ;
+
+no-wiki
+    : NO_WIKI_START raw-text NO_WIKI_END
+        { $$ = {t: 'no-wiki', c: [{t: 'plain-text', v: $2 }]}; }
     ;
 
 line-ending
