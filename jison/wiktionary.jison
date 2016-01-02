@@ -400,6 +400,8 @@ bold-italics-mix
         { $$ = {t: 'bold-text', c: [{t: 'italic-text', c: $2}]}; }
     | BOLD_ITALICS bold-italics-content ITALICS bold-content ITALICS bold-italics-content BOLD_ITALICS
         { $$ = {t: 'bold-text', c: [{t: 'italic-text', c: $2}].concat($4,[{t: 'italic-text', c: $6}])}; }
+    | BOLD_ITALICS bold-italics-content BOLD italics-content BOLD bold-italics-content BOLD_ITALICS
+        { $$ = {t: 'italic-text', c: [{t: 'bold-text', c: $2}].concat($4,[{t: 'bold-text', c: $6}])}; }
     | BOLD_ITALICS bold-italics-content ITALICS bold-content BOLD
         { $$ = {t: 'bold-text', c: [{t: 'italic-text', c: $2}].concat($4)}; }
     | BOLD_ITALICS bold-italics-content BOLD italics-content ITALICS

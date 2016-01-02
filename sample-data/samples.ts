@@ -46,6 +46,18 @@ export module Samples {
             {jp:'$..[?(@.t=="bold-text")]..v', e: ["Italics Bold", ' Bold ', "Italics Bold"]},
             {jp:'$..[?(@.t=="italic-text")]..v', e: ["Italics Bold", "Italics Bold"]},
         ]],
+        ['Italics(Bold Text Bold)', "'''''Italics Bold''' Italics '''Italics Bold'''''", [
+            {jp:'$..[?(@.t=="bold-text")].t', e: ["bold-text", "bold-text"]},
+            {jp:'$..[?(@.t=="italic-text")].t', e: ["italic-text"]},
+            {jp:'$..[?(@.t=="italic-text")]..v', e: ["Italics Bold", ' Italics ', "Italics Bold"]},
+            {jp:'$..[?(@.t=="bold-text")]..v', e: ["Italics Bold", "Italics Bold"]},
+        ]],
+        ['Italics(Bold Text Bold)', "'''''Italics Bold''' Italics '''Bold''' Italics '''Italics Bold'''''", [
+            {jp:'$..[?(@.t=="bold-text")].t', e: ["bold-text", "bold-text", "bold-text"]},
+            {jp:'$..[?(@.t=="italic-text")].t', e: ["italic-text"]},
+            {jp:'$..[?(@.t=="italic-text")]..v', e: ["Italics Bold", ' Italics ', 'Bold', ' Italics ', "Italics Bold"]},
+            {jp:'$..[?(@.t=="bold-text")]..v', e: ["Italics Bold", 'Bold', "Italics Bold"]},
+        ]],
         ['Bold Trailing Quote', "'''Bold''''", [
             {jp:'$..[?(@.t=="bold-text")].t', e: ["bold-text"]},
             {jp:'$..[?(@.t=="bold-text")]..v', e: ["Bold'"]},
