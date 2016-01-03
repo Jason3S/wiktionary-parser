@@ -2,7 +2,7 @@
  * Created by jasondent on 24/12/2015.
  */
 var assert = require('chai').assert;
-var wiktionary = require('../jison/wiktionary');
+var wiktionary = require('../lib/wiki-parser');
 var wikiAst = require('../lib/wiki-ast');
 var prettyjson = require('prettyjson');
 var jsonSelect = require('JSONSelect');

@@ -5,6 +5,14 @@ var fs_1 = require("fs");
 var Samples;
 (function (Samples) {
     var parserSamples = [
+        ['Numbered List', "# a\n# b\n# c\n\n", [
+                { jp: '$..[?(@.t=="ordered-list")].t', e: ["ordered-list"] },
+                { jp: '$..[?(@.t=="list-item")].t', e: ["list-item", "list-item", "list-item"] },
+            ]],
+        ['Numbered List EOF', "# a\n# b\n# c", [
+                { jp: '$..[?(@.t=="ordered-list")].t', e: ["ordered-list"] },
+                { jp: '$..[?(@.t=="list-item")].t', e: ["list-item", "list-item", "list-item"] },
+            ]],
         ['Italics(Text, Bold, Text)', "'' Text '''Bold''' Text''", [
                 { jp: '$..[?(@.t=="bold-text")].t', e: ["bold-text"] },
                 { jp: '$..[?(@.t=="italic-text")].t', e: ["italic-text"] },

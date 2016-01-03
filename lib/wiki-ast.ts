@@ -4,7 +4,7 @@
 
 var _ = require('lodash');
 
-interface WikiAbstractSyntaxTree {
+export interface WikiAbstractSyntaxTree {
     t: string;
     c?: WikiAbstractSyntaxTree[];
     v?: string;

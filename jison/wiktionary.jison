@@ -1,3 +1,4 @@
+
 /*
 An attempt at describing the wiki media grammer for the purposes of parsing Wiktionary pages.
 To build this grammar:
@@ -6,6 +7,10 @@ $ jison wiktionary.jison -m commonjs -p lalr
 /* lexical grammar */
 %lex
 
+/*
+%options backtrack_lexer_no
+*/
+
 WikiMarkupCharacters    [|[\]*#:;<>='{}]
 PlainText               [^|[\]*#:;<>='{}\n]
 SPACE                   [ \t]
@@ -13,13 +18,102 @@ NL                      \n
 Italics                 "''"
 Bold                    "'''"
 BoldItalics             "'''''"
+ListCharacters          [:#*;]
+NonListCharacters       [^:#*;]
 
-/*
-% options flex
-*/
-
-%s template link
+%s template link list
 %x nowiki
+
+%{
+    function CreateListStack () {
+        var stack = [''];
+        return {
+            push: function(v) { stack.push(v); },
+            pop: function() { return stack.pop(); },
+            peek: function() { return stack[stack.length-1]; }
+        };
+    }
+
+    var tokensListStart = {
+        "*":'UL',
+        "#":'OL',
+        ";":'DL',
+        ":":'INDENT'
+    };
+    var tokensListEnd = {
+        "*":'UL_E',
+        "#":'OL_E',
+        ";":'DL_E',
+        ":":'INDENT_E'
+    };
+
+    function extractListSig(text) {
+        return text.replace(/^([:#*;]*).*$/, '$1');
+    }
+    function removeListSig(text) {
+        return text.replace(/^[:#*;]*/, '');
+    }
+
+    function processListX(lex, text) {
+        if (! lex.listStack ) {
+            lex.listStack = CreateListStack();
+        }
+        var listStack = lex.listStack;
+        var token = 'TEXT';
+        var sig = extractListSig(text);
+        if (listStack.peek() === sig) {
+            // Matches, so we have a list item
+            return {token: 'LI', text: removeListSig(text)};
+        }
+        // Start a nested list?
+        var currentSig = listStack.peek();
+        if (sig.substr(0, currentSig.length) === currentSig) {
+            token = tokensListStart[sig[currentSig.length]];
+            listStack.push(sig.substr(0, currentSig.length+1));
+            lex.begin('list');
+            return {token: token, text: text};
+        }
+        // End of list, stop one at a time.
+        token = tokensListEnd[currentSig[currentSig.length-1]];
+        listStack.pop();
+        lex.popState();
+        return {token: token, text: text};
+    }
+
+    function processList(lex, sig) {
+        if (! lex.listStack ) {
+            lex.listStack = CreateListStack();
+        }
+        var listStack = lex.listStack;
+        var tokens = [];
+        if (listStack.peek() === sig) {
+            // Matches, so we have a list item or empty
+            if (sig.length) {
+                return ['LI'];
+            } else {
+                return [];
+            }
+        }
+        // Start a nested list?
+        var currentSig = listStack.peek();
+        if (sig.substr(0, currentSig.length) === currentSig) {
+            if (currentSig) {
+                tokens.push('LI');
+            }
+            tokens.push(tokensListStart[sig[currentSig.length]]);
+            listStack.push(sig.substr(0, currentSig.length+1));
+            lex.begin('list');
+            return tokens.concat(processList(lex, sig));
+        }
+        // End of list, stop one at a time.
+        tokens.push(tokensListEnd[currentSig[currentSig.length-1]]);
+        listStack.pop();
+        lex.popState();
+        return tokens.concat(processList(lex, sig));
+    }
+
+%}
+
 
 %%
 
@@ -31,12 +125,6 @@ BoldItalics             "'''''"
                                         } else {
                                             return 'H'+yytext.trim().length+'_BEG';
                                         }
-                                    %}
-(\r|\n|\n\r|\r\n)                   %{
-                                        if (yylloc.first_column)
-                                            return 'NEWLINE'
-                                        else
-                                            return 'EMPTY_LINE';
                                     %}
 [{][{]	                            %{
                                         this.begin('template'); return 'TEMPLATE_START';
@@ -62,6 +150,27 @@ BoldItalics             "'''''"
                                     %}
 <nowiki>.                           return 'TEXT'
 
+<list>{ListCharacters}+             %{  /* List Item */
+                                        if (!yylloc.first_column) {
+                                            return processList(this, yytext);
+                                        } else {
+                                            return 'TEXT'; /* treat list characters in the middle of a line as text. */
+                                        }
+                                    %}
+<list>[\n]/{NonListCharacters}+     %{  /* End of List */
+                                        return ['NEWLINE'].concat(processList(this, ''));
+                                    %}
+<list><<EOF>>                       %{  /* End of List */
+                                        return processList(this, '').concat(['EOF']);
+                                    %}
+{ListCharacters}+                   %{  /* Start List Mode */
+                                        if (!yylloc.first_column) {
+                                            return processList(this, yytext);
+                                        } else {
+                                            return 'TEXT'; /* treat list characters in the middle of a line as text. */
+                                        }
+                                    %}
+
 [']+/{BoldItalics}($|[^'])          return 'TEXT'
 {BoldItalics}                       return 'BOLD_ITALICS'
 [']/{Bold}                          return 'TEXT'
@@ -70,10 +179,67 @@ BoldItalics             "'''''"
 [']                                 return 'TEXT'
 "\\u"[0-9a-fA-F]{4}                 return 'UNICODE'
 <<EOF>>                             return 'EOF'
+(\r|\n|\n\r|\r\n)                   %{
+                                        if (yylloc.first_column)
+                                            return 'NEWLINE';
+                                        else
+                                            return 'EMPTY_LINE';
+                                    %}
 {PlainText}+                        return 'TEXT'
 .                                   return 'TEXT'
 
+%%
+
+    /* Begin Lexer Customization Methods */
+    (function (){
+        var _originalLexMethod = lexer.lex;
+        var _tokenCache = [];
+        var _debug = true;
+        var tokenMap = [];
+
+        function log() {
+            if (_debug) {
+                console.log.apply(console, arguments);
+            }
+        }
+
+        function getTokenText(token) {
+            if (Number.isInteger(token)) {
+                return tokenMap[token] || ('Token Not Found: ' + token);
+            }
+            return token;
+        }
+
+        lexer.lex = function() {
+            var token = _tokenCache.shift();
+            if (token) {
+                log(getTokenText(token));
+                return token;
+            }
+            token = _originalLexMethod.call(this);
+            if (Array.isArray(token)) {
+                _tokenCache = token;
+                return this.lex();
+            }
+            log(getTokenText(token));
+            return token;
+        };
+
+        function setupTokenMap() {
+            var symbols = parser.symbols_;
+            for (token in symbols) {
+                if (symbols.hasOwnProperty(token)) {
+                    tokenMap[symbols[token]] = token;
+                }
+            }
+        }
+
+        setupTokenMap();
+    }());
+    /* End Lexer Customization Methods */
+
 /lex
+
 
 /* operator associations and precedence */
 %left section1
@@ -88,6 +254,22 @@ BoldItalics             "'''''"
 %left section5-content
 %left italic-text bold-text
 %left italic-text-inner bold-text-inner
+
+%{
+    /*
+     * This chunk is included in the parser code, before the lexer definition section and after the parser has been defined.
+     *
+     * WARNING:
+     *
+     * Meanwhile, keep in mind that all the parser actions, which will execute inside the `parser.performAction()` function,
+     * will have a `this` pointing to `$$`.
+     *
+     * If you want to access the lexer and/or parser, these are accessible inside the parser rule action code via
+     * the `yy.lexer` and `yy.parser` dereferences respectively.
+     */
+
+    // console.log("This chunk is included in the parser code");
+%}
 
 
 %start wiki-page
@@ -110,12 +292,17 @@ article
 article-content
     : sections
         { $$ = {t: 'article', c:[$1]};}
-    | paragraphs
+    | general-content
         { $$ = {t: 'article', c:[$1]};}
-    | article-content paragraphs
+    | article-content general-content
         { $1.c.push($2); $$ = $1; }
     | article-content sections
         { $1.c.push($2); $$ = $1; }
+    ;
+
+general-content
+    : paragraphs
+    | list
     ;
 
 sections
@@ -161,7 +348,7 @@ section1-content
     ;
 
 section1-content-item
-    : paragraphs
+    : general-content
     | section2
     | section3
     | section4
@@ -189,7 +376,7 @@ section2-content
     ;
 
 section2-content-item
-    : paragraphs
+    : general-content
     | section3
     | section4
     | section5
@@ -215,7 +402,7 @@ section3-content
     ;
 
 section3-content-item
-    : paragraphs
+    : general-content
     | section4
     | section5
     ;
@@ -240,7 +427,7 @@ section4-content
     ;
 
 section4-content-item
-    : paragraphs
+    : general-content
     | section5
     ;
 
@@ -264,7 +451,7 @@ section5-content
     ;
 
 section5-content-item
-    : paragraphs
+    : general-content
     ;
 
 paragraphs
@@ -292,16 +479,24 @@ lines-of-text
 
 line-of-text
     : text-content line-ending
-        { $$ = {t: 'line-of-text', c:[$1, $2]}; }
+        { $$ = {t: 'line-of-text', c: $1.concat([$2])}; }
     | text-content
-        { $$ = {t: 'line-of-text', c:[$1]}; }
+        { $$ = {t: 'line-of-text', c: $1}; }
     ;
 
 text-content
+    : text-content-item
+        { $$ = [$1]; }
+    | text-content text-content-item
+        { $$ = $1.concat([$2]); }
+    ;
+
+text-content-item
     : text
     | template
     | link
     ;
+
 
 text
     : rich-text
@@ -341,7 +536,7 @@ bold-italics-content
     : bold-italics-content-item
         { $$ = [$1] }
     | bold-italics-content bold-italics-content-item
-        { $1.push($2); $$ = $1 }
+        { $$ = $1.concat([$2]); }
     ;
 
 bold-italics-content-item
@@ -355,7 +550,7 @@ bold-content
     : bold-content-item
         { $$ = [$1] }
     | bold-content bold-content-item
-        { $1.push($2); $$ = $1 }
+        { $$ = $1.concat([$2]); }
     ;
 
 bold-content-item
@@ -367,7 +562,7 @@ italics-content
     : italics-content-item
         { $$ = [$1] }
     | italics-content italics-content-item
-        { $1.push($2); $$ = $1 }
+        { $$ = $1.concat([$2]); }
     ;
 
 italics-content-item
@@ -471,7 +666,7 @@ template-param
     ;
 
 template-param-content
-    : text-content
+    : text-content-item
     | line-ending
     | blank-line
     ;
@@ -504,8 +699,35 @@ link-param
         { $$ = $1; }
     ;
 
+list
+    : OL list-items OL_E
+        { $$ = {t:'ordered-list', c: $2}; }
+    | UL list-items UL_E
+        { $$ = {t:'ordered-list', c: $2}; }
+    | DL list-items DL_E
+        { $$ = {t:'ordered-list', c: $2}; }
+    | INDENT list-items INDENT_E
+        { $$ = {t:'ordered-list', c: $2}; }
+    ;
+
+list-items
+    : list-item
+        { $$ = [$1]; }
+    | list-items list-item
+        { $$ = $1.concat([$2]); }
+    ;
+
+list-item
+    : LI line-of-text
+        { $$ = {t: 'list-item', c: [$2]}; }
+    | LI list
+        { $$ = {t: 'list-item', c: [$2]}; }
+    ;
+
 end-of-file
     : EOF
         { $$ = {t: 'eof'};}
     ;
+
+%%
 
