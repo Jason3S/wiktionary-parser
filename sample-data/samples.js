@@ -131,6 +131,21 @@ var Samples;
         return parserSamples;
     }
     Samples.getParserSamples = getParserSamples;
+    function getTemplateSamples() {
+        return [
+            ['#expr: 5', ['{{ #expr: 5}}', 'Page1', []], [/^5$/]],
+            ['#expr: 5+8/2', ['{{ #expr: 5+8/2 }}', 'Page1', []], [/^9$/]],
+            ['Basic Template', ['text', 'Page1', []], [/^text$/]],
+            ['Param 1 missing', ['{{{1|}}}', 'Page1', []], [/^Page1$/]],
+            ['Param 1 missing with default', ['{{{1|happy}}}', 'Page1', []], [/^happy$/]],
+            ['Param 1 exists', ['{{{1|}}}', 'Page1', ['a', 'b']], [/^a$/]],
+            ['Param 1 named', ['{{{1|}}}', 'Page1', ['a', '1=b']], [/^b$/]],
+            ['#if false', ['{{ #if: {{{1}}}|yes|no}}', 'Page1', []], [/^no$/]],
+            ['#if 0', ['{{ #if: {{{1}}}|yes|no}}', 'Page1', []], [/^no$/]],
+            ['#if true', ['{{#if: {{{1}}}|yes|no}}', 'Page1', [1]], [/^yes$/]],
+        ];
+    }
+    Samples.getTemplateSamples = getTemplateSamples;
     function readSampleFileWiktionaryEnHouse() {
         return fs_1.readFileSync('./sample-data/wiktionary-en-house.wm', 'utf8');
     }
