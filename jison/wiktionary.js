@@ -790,39 +790,6 @@ performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
         ":":'INDENT_E'
     };
 
-    function extractListSig(text) {
-        return text.replace(/^([:#*;]*).*$/, '$1');
-    }
-    function removeListSig(text) {
-        return text.replace(/^[:#*;]*/, '');
-    }
-
-    function processListX(lex, text) {
-        if (! lex.listStack ) {
-            lex.listStack = CreateListStack();
-        }
-        var listStack = lex.listStack;
-        var token = 'TEXT';
-        var sig = extractListSig(text);
-        if (listStack.peek() === sig) {
-            // Matches, so we have a list item
-            return {token: 'LI', text: removeListSig(text)};
-        }
-        // Start a nested list?
-        var currentSig = listStack.peek();
-        if (sig.substr(0, currentSig.length) === currentSig) {
-            token = tokensListStart[sig[currentSig.length]];
-            listStack.push(sig.substr(0, currentSig.length+1));
-            lex.begin('list');
-            return {token: token, text: text};
-        }
-        // End of list, stop one at a time.
-        token = tokensListEnd[currentSig[currentSig.length-1]];
-        listStack.pop();
-        lex.popState();
-        return {token: token, text: text};
-    }
-
     function processList(lex, sig) {
         if (! lex.listStack ) {
             lex.listStack = CreateListStack();

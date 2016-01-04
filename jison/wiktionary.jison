@@ -1,6 +1,6 @@
 
 /*
-An attempt at describing the wiki media grammer for the purposes of parsing Wiktionary pages.
+An attempt at describing the wiki media grammar for the purposes of parsing Wiktionary pages.
 To build this grammar:
 $ jison wiktionary.jison -m commonjs -p lalr
 */
@@ -46,39 +46,6 @@ NonListCharacters       [^:#*;]
         ";":'DL_E',
         ":":'INDENT_E'
     };
-
-    function extractListSig(text) {
-        return text.replace(/^([:#*;]*).*$/, '$1');
-    }
-    function removeListSig(text) {
-        return text.replace(/^[:#*;]*/, '');
-    }
-
-    function processListX(lex, text) {
-        if (! lex.listStack ) {
-            lex.listStack = CreateListStack();
-        }
-        var listStack = lex.listStack;
-        var token = 'TEXT';
-        var sig = extractListSig(text);
-        if (listStack.peek() === sig) {
-            // Matches, so we have a list item
-            return {token: 'LI', text: removeListSig(text)};
-        }
-        // Start a nested list?
-        var currentSig = listStack.peek();
-        if (sig.substr(0, currentSig.length) === currentSig) {
-            token = tokensListStart[sig[currentSig.length]];
-            listStack.push(sig.substr(0, currentSig.length+1));
-            lex.begin('list');
-            return {token: token, text: text};
-        }
-        // End of list, stop one at a time.
-        token = tokensListEnd[currentSig[currentSig.length-1]];
-        listStack.pop();
-        lex.popState();
-        return {token: token, text: text};
-    }
 
     function processList(lex, sig) {
         if (! lex.listStack ) {
