@@ -5,6 +5,10 @@
     $ jison wiki-template.jison -m commonjs -p lalr
 */
 
+%{
+    // First Block of code.
+%}
+
 /* lexical grammar */
 
 %lex
@@ -17,18 +21,24 @@
 <param>"{{{"                        %{ this.begin('param'); return 'PARAM_START'; %}
 <template>"{{{"                     %{ this.begin('param'); return 'PARAM_START'; %}
 <param>"}}}"                        %{ this.popState(); return 'PARAM_END'; %}
-<param>"|"                          return 'PARAM_SEPARATOR';
+<param>"|"                          return '|';
 <param>.                            return 'TEXT';
 "{{"                                %{ this.begin('template'); return '{{'; %}
 <template>"{{"                      %{ this.begin('template'); return '{{'; %}
 <template>"}}"                      %{ this.popState(); return '}}'; %}
 <template>\s*"#if:"                 return '#if:';
+<template>\s*"#ifeq:"               return '#ifeq:';
 <template>\s*"#expr:"               %{ this.begin('expr'); return '#expr:'; %}
 <template>"|"                       return '|';
-<template>.                         return 'TEXT';
+<template>[0-9]+([.][0-9]+)?        return 'NUMBER';
+<template>(.|\n)                    return 'TEXT';
+<expr>"{{{"                         %{ this.begin('param'); return 'PARAM_START'; %}
 <expr>"{{"                          %{ this.begin('template'); return '{{'; %}
 <expr>[0-9]+([.][0-9]+)?            return 'NUMBER';
+<expr>"true"                        return "TRUE";
+<expr>"false"                       return "FALSE";
 <expr>"and"                         return '&&';
+<expr>"or"                          return '||';
 <expr>"="                           return '=';
 <expr>"("                           return '(';
 <expr>")"                           return ')';
@@ -41,7 +51,11 @@
 <expr>"e"                           return 'E';
 <expr>"}}"                           %{ this.popState(); return '}}'; %}
 <expr>\s+                           /* ignore space in expressions */
-.                                   return 'TEXT';
+"<includeonly>"                     return 'INCLUDE_ONLY';
+"</includeonly>"                    return 'INCLUDE_ONLY_END';
+"<noinclude>"                       return 'NO_INCLUDE';
+"</noinclude>"                      return 'NO_INCLUDE_END';
+(.|\n)                              return 'TEXT';
 
 
 %%
@@ -85,48 +99,6 @@
             return token;
         };
 
-        function normalizeParams(pageName, pageParams) {
-            var params = [undefined];
-            var namedParamRegEx = /^([a-zA-Z0-9]+)[=](.*)$/;
-            for (i in pageParams) {
-                if (pageParams.hasOwnProperty(i)) {
-                    var p = '' + pageParams[i];
-                    var m = p.match(namedParamRegEx);
-                    if (m) {
-                        params[m[1]] = m[2];
-                    } else {
-                        params.push(p);
-                    }
-                }
-            }
-
-            return params;
-        }
-
-        parser.parse = function(input, pageName, params) {
-            _pageName = pageName;
-            _params = normalizeParams(pageName, params);
-            return _originalParserMethod.call(this, input);
-        };
-
-        function processParam(name, alternate) {
-
-            name = ('' + name).trim();
-
-            if (alternate === null) {
-                alternate = _pageName;
-            }
-            if (alternate === undefined) {
-                alternate = '';
-            }
-            var p = _params[name];
-            if (p === undefined) {
-                return alternate;
-            }
-            return p;
-        }
-
-        parser.processParam = processParam;
 
         function setupTokenMap() {
             var symbols = parser.symbols_;
@@ -138,10 +110,7 @@
         }
 
         setupTokenMap();
-
-        return {
-            processParam: processParam
-        };
+        // parser.processWikiTemplate = processWikiTemplate;
     }());
 
     /* End Lexer Customization Methods */
@@ -153,7 +122,7 @@
 %left '+' '-'
 %left '*' '/'
 %left '^'
-%left UMINUS
+%right UMINUS
 
 
 %start start
@@ -165,67 +134,120 @@ start
     : content <<EOF>>
         { return $1; }
     | <<EOF>>
-        { return ''; }
+        { return leaf(null); }
     ;
 
 content
     : content-item
-        { $$ = $1; }
+        { $$ = content($1); }
     | content content-item
-        { $$ = $1 + $2; }
+        { $$ = content($1, $2); }
     ;
 
 content-item
     : text
     | page-param
     | function
+    | node
+    ;
+
+node
+    : INCLUDE_ONLY content INCLUDE_ONLY_END
+        { $$ = node('includeonly', [$2]); }
+    | NO_INCLUDE content NO_INCLUDE_END
+        { $$ = node('noinclude', [$2]); }
     ;
 
 page-param
     : PARAM_START PARAM_END
-        { $$ = processParam(null); }
-    | PARAM_START PARAM_SEPARATOR PARAM_END
-        { $$ = processParam(null, null); }
-    | PARAM_START text PARAM_END
-        { $$ = processParam($2); }
-    | PARAM_START text PARAM_SEPARATOR PARAM_END
-        { $$ = processParam($2, null); }
-    | PARAM_START text PARAM_SEPARATOR text PARAM_END
-        { $$ = processParam($2, $4); }
+        { $$ = node('pageParam', [missingParam(null)]); }
+    | PARAM_START param2 PARAM_END
+        { $$ = node('pageParam', $2); }
     ;
 
 param
+    : param-wrapper
+        { $$ = trimParam($1); }
+    ;
+
+param-wrapper
     : param-item
         { $$ = $1 }
-    | param param-item
-        { $$ = $1 + $2; }
+    | param-wrapper param-item
+        { $$ = content($1, $2); }
     ;
 
 param-item
     : text
+    | number
     | function
     | page-param
     ;
 
 
 function
-    : function-if
+    : function-ifs
     | function-expr
+    | template
     ;
 
-function-if
-    : '{{' '#if:' param '|' param '|' param '}}'
-        { $$ = $param1.trim() ? $param2.trim() : $param3.trim(); }
-    | '{{' '#if:' param '|' param '|' '}}'
-        { $$ = $param1.trim() ? $param2.trim() : ''; }
-    | '{{' '#if:' param '|' '|' param '}}'
-        { $$ = $param1.trim() ? '' : $param2.trim(); }
-    | '{{' '#if:' param '|' '|' '}}'
-        { $$ = ''; }
-    | '{{' '#if:' param '|' '}}'
-        { $$ = ''; }
-    | '{{' '#if:' param '}}'
-        { $$ = ''; }
+function-ifs
+    : '{{' '#if:' param3 '}}'
+        { $$ = node('if', $3); }
+    | '{{' '#if:' '}}'
+        { $$ = node('if', [].fill(missingParam(),0,3)); }
+    | '{{' '#ifeq:' param4 '}}'
+        { $$ = node('ifeq', $3); }
+    | '{{' '#ifeq:' '}}'
+        { $$ = node('ifeq', [].fill(missingParam(),0,4)); }
+    ;
+
+template
+    : '{{' params '}}'
+        { $$ = node('template', $2); }
+    | '{{' params '}}'
+        { $$ = node('template', []); }
+    ;
+
+params
+    : param1
+        { $$ = $1; }
+    | params param1
+        { $$ = $1.concat($2); }
+    ;
+
+param4
+    : param2 '|' param2
+        { $$ = $1.concat($3); }
+    | param3
+        { $$ = $1.concat([missingParam()]); }
+    ;
+
+param3
+    : param2 '|' param1
+        { $$ = $1.concat($3); }
+    | param2 '|'
+        { $$ = $1.concat([leaf()]); }
+    | param2
+        { $$ = $1.concat([missingParam()]); }
+    ;
+
+param2
+    : param1 '|' param1
+        { $$ = $1.concat($3); }
+    | param1 '|'
+        { $$ = $1.concat([leaf()]); }
+    | '|' param1
+        { $$ = [leaf()].concat($2); }
+    | '|'
+        { $$ = [leaf(),leaf()]; }
+    | param1
+        { $$ = $1.concat([missingParam()]); }
+    ;
+
+param1
+    : param
+        { $$ = [$1]; }
     ;
 
 function-expr
@@ -235,37 +257,299 @@ function-expr
 
 e
     : e '+' e
-        {$$ = $1+$3;}
+        {$$ = node('+', [$1, $3]);}
     | e '-' e
-        {$$ = $1-$3;}
+        {$$ = node('-', [$1, $3]);}
     | e '*' e
-        {$$ = $1*$3;}
+        {$$ = node('*', [$1, $3]);}
     | e '/' e
-        {$$ = $1/$3;}
+        {$$ = node('/', [$1, $3]);}
+    | e '||' e
+        {$$ = node('||', [$1, $3]);}
+    | e '&&' e
+        {$$ = node('&&', [$1, $3]);}
     | e '^' e
-        {$$ = Math.pow($1, $3);}
+        {$$ = node('pow', [$1, $3]);}
     | '-' e %prec UMINUS
-        {$$ = -$2;}
+        {$$ = node('-', [leaf(0), $2]);}
     | '(' e ')'
         {$$ = $2;}
-    | NUMBER
-        {$$ = Number(yytext);}
+    | number
+        {$$ = $1;}
+    | TRUE
+        {$$ = leaf(true);}
+    | FALSE
+        {$$ = leaf(false);}
     | E
-        {$$ = Math.E;}
+        {$$ = leaf(Math.E);}
     | PI
-        {$$ = Math.PI;}
+        {$$ = leaf(Math.PI);}
+    | page-param
+        {$$ = $1;}
     ;
 
+number
+    : NUMBER
+        {$$ = leaf(Number(yytext));}
+    ;
 
 text
+    : text-string
+        { $$ = leaf($1); }
+    ;
+
+text-string
     : TEXT
         { $$ = $1; }
-    | text TEXT
+    | text-string TEXT
         { $$ = $1 + $2; }
     ;
 
 %%
 
-function processParam (param, alternate) {
-    return parser.processParam(param, alternate);
+var _ = require('lodash');
+var wikiAst = require('./WikiAst').wikiAst;
+
+var CONTENT = 'content';
+var x = wikiAst;
+
+function leaf(v) {
+    v = (typeof v === "undefined") ? null : v;
+    return { v: v };
 }
+
+function missingParam() {
+    return { v: undefined };
+}
+
+function node(t, c) {
+    return { t: t, c: c };
+}
+
+function addChild(node, c) {
+    node.c.push(c);
+    return node;
+}
+
+function append(a, b) {
+    a.c.concat([b]);
+    return a;
+}
+
+function content(a, b) {
+    if (! b) {
+        if (a.t === CONTENT) {
+            return a;
+        }
+        return node(CONTENT, [a]);
+    }
+    if (a.t === CONTENT) {
+        if (b.t === CONTENT) {
+            a.c.concat(b.c);
+        } else {
+            a.c.concat([b]);
+        }
+        return a;
+    } else if (b.t === CONTENT) {
+        return node(CONTENT, [a].concat(b.c));
+    }
+
+    return node(CONTENT, [a,b]);
+}
+
+
+function trimParamLeft(ast) {
+    "use strict";
+
+    var c, len, i;
+
+    if (ast == null) {
+        return ast;
+    }
+
+    if (typeof ast.v === "string") {
+        ast.v = ast.v.trimLeft();
+
+        if (ast.v === '') {
+            return null;
+        }
+
+        return ast;
+    }
+
+    c = ast.c;
+    if (! c || ! c.length) {
+        return null;
+    }
+
+    if (ast.t !== CONTENT) {
+        return ast;
+    }
+
+    len = c.length;
+
+    for(i = 0; i < len; ++i) {
+        c[i] = trimParamLeft(c[i]);
+        if (c[i] !== null) break;
+    }
+
+    if (i >= len) {
+        return null;
+    }
+
+    ast.c = c.slice(i);
+
+    if (ast.c.length == 1) {
+        return ast.c[0];
+    }
+
+    return ast;
+}
+
+
+function trimParamRight(ast) {
+    "use strict";
+
+    var c, len, i;
+
+    if (ast == null) {
+        return ast;
+    }
+
+    if (typeof ast.v === "string") {
+        ast.v = ast.v.trimRight();
+
+        if (ast.v === '') {
+            return null;
+        }
+
+        return ast;
+    }
+
+    c = ast.c;
+    if (! c || ! c.length) {
+        return null;
+    }
+
+    if (ast.t !== CONTENT) {
+        return ast;
+    }
+
+    len = c.length;
+
+    for(i = len-1; i >= 0; --i) {
+        c[i] = trimParamRight(c[i]);
+        if (c[i] !== null) break;
+    }
+
+    if (i < 0) {
+        return null;
+    }
+
+    ast.c = c.slice(0, i+1);
+
+    if (ast.c.length == 1) {
+        return ast.c[0];
+    }
+
+    return ast;
+}
+
+function trimParam(ast) {
+    ast = trimParamRight(trimParamLeft(ast));
+    if (ast == null) {
+        return leaf(null);
+    }
+    return ast;
+}
+
+function processWikiTemplate(page, params, ast, transclusion) {
+    "use strict";
+
+    var INCLUDE_MODE = 'include';
+
+    transclusion = transclusion || INCLUDE_MODE;
+    var isIncludeOnly = transclusion === INCLUDE_MODE;
+    var isNoInclude = transclusion !== INCLUDE_MODE;
+    var pageParams = normalizeParams(params);
+    var pageName = normalizePageName(page);
+
+    var functions = {
+        pageParam: getPageParam,
+        "+":  function(a, b){ return a + b; },
+        "-":  function(a, b){ return a - b; },
+        "*":  function(a, b){ return a * b; },
+        "/":  function(a, b){ return a / b; },
+        "||": function(a, b){ return a || b; },
+        "&&": function(a, b){ return a && b; },
+        "if": function(a, b, c) { return a ? b : c; },
+        "ifeq": function(a, b, c, d) { return (a == b) ? c : d; },
+        pow: Math.pow,
+        includeonly: function(content) { return isIncludeOnly ? content : ''; },
+        noinclude: function(content) { return isNoInclude ? content : ''; },
+        "content": function() { return arguments.length == 1 ? arguments[0] : Array.from(arguments).join(''); }
+    };
+
+    function processAst(ast) {
+        var i;
+        var v = ast.v;
+        var c = ast.c;
+        var p = [];
+        if (v !== undefined || c === undefined) {
+            return v;
+        }
+
+        for (i = 0; i < c.length; i += 1) {
+            p[i] = processAst(c[i]);
+        }
+        var fn = functions[ast.t];
+        if (fn === undefined) {
+            console.log("Unknown function: '"+ast.t+"'");
+            return undefined;
+        }
+        return fn.apply(this, p);
+    }
+
+    function normalizeParams(pageParams) {
+        var params = [undefined];
+        var namedParamRegEx = /^([a-zA-Z0-9]+)[=](.*)$/;
+        for (var i in pageParams) {
+            if (pageParams.hasOwnProperty(i)) {
+                var p = '' + pageParams[i];
+                var m = p.match(namedParamRegEx);
+                if (m) {
+                    params[m[1]] = m[2];
+                } else {
+                    params.push(p);
+                }
+            }
+        }
+
+        return params;
+    }
+
+    function normalizePageName(pageName) {
+        return pageName.replace(/^[^:]+[:]/, '');
+    }
+
+    function getPageParam(name, alternate) {
+        name = ('' + name).trim();
+
+        if (alternate === null) {
+            alternate = pageName;
+        }
+        if (alternate === undefined) {
+            alternate = '{{{'+name+'}}}';
+        }
+        var p = pageParams[name];
+        if (p === undefined) {
+            return alternate;
+        }
+        return p;
+    }
+
+    return processAst(ast);
+}
+
+parser.processWikiTemplate = processWikiTemplate;
+

@@ -27,3 +27,4 @@ export function validateWikiAbstractSyntaxTree(ast: WikiAbstractSyntaxTree) {
         }, valid));
     return valid;
 }
+
