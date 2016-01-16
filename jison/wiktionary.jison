@@ -161,7 +161,7 @@ NonListCharacters       [^:#*;]
     (function (){
         var _originalLexMethod = lexer.lex;
         var _tokenCache = [];
-        var _debug = true;
+        var _debug = false;
         var tokenMap = [];
 
         function log() {

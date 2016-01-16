@@ -4,6 +4,7 @@
 
 import wiktionaryReader = require('./lib/wiktionary/wiktionary-reader');
 
+/*
 var p = wiktionaryReader.fetchWord('en', 'walk');
 p.then(function(response) {
     console.log(response);
@@ -15,3 +16,4 @@ p.catch(function(err) {
     process.exit(1);
 });
 
+*/

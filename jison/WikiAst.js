@@ -145,7 +145,7 @@ var WikiAst;
         var fnMapItem = WikiAst.fnMap[type];
         return function (c) { return new GenericNode(c, type, fnMapItem.fn, fnMapItem.limit); };
     }
-    WikiAst.nodeMap = {
+    var nodeMap = {
         "+": makeNodeMap("+"),
         "-": makeNodeMap("-"),
         "*": makeNodeMap("*"),
@@ -164,7 +164,7 @@ var WikiAst;
         pageParam: makeNodeMap("pageParam")
     };
     function node(type, children) {
-        var fn = WikiAst.nodeMap[type];
+        var fn = nodeMap[type];
         if (!fn) {
             throw new Error('Unknown Type: ' + type);
         }

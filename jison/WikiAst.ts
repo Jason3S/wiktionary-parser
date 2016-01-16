@@ -152,7 +152,7 @@ export module WikiAst {
         return (c: IWikiAstTree[]) => {return new GenericNode(c, type, fnMapItem.fn, fnMapItem.limit);};
     }
 
-    export var nodeMap = {
+    var nodeMap = {
         "+":  makeNodeMap("+"),
         "-":  makeNodeMap("-"),
         "*":  makeNodeMap("*"),
