@@ -100,6 +100,17 @@ var RenderUnorderedList = (function (_super) {
     RenderUnorderedList.registered = registerMap(RenderUnorderedList, ['unordered-list']);
     return RenderUnorderedList;
 })(BaseNodeView);
+var RenderIndentedList = (function (_super) {
+    __extends(RenderIndentedList, _super);
+    function RenderIndentedList() {
+        _super.apply(this, arguments);
+    }
+    RenderIndentedList.prototype.renderModel = function (model, value, children) {
+        return (React.createElement("ul", {"className": 'ast-' + model.t + ' indented-list'}, BaseNodeView.renderChildren(children)));
+    };
+    RenderIndentedList.registered = registerMap(RenderIndentedList, ['indented-list']);
+    return RenderIndentedList;
+})(BaseNodeView);
 var RenderListItem = (function (_super) {
     __extends(RenderListItem, _super);
     function RenderListItem() {

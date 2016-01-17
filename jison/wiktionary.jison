@@ -51,32 +51,38 @@ NonListCharacters       [^:#*;]
         if (! lex.listStack ) {
             lex.listStack = CreateListStack();
         }
-        var listStack = lex.listStack;
-        var tokens = [];
-        if (listStack.peek() === sig) {
-            // Matches, so we have a list item or empty
-            if (sig.length) {
-                return ['LI'];
-            } else {
-                return [];
+        var startSig = lex.listStack.peek();
+
+        function innerProcessList(lex, sig) {
+            var listStack = lex.listStack;
+            var tokens = [];
+            if (listStack.peek() === sig) {
+                // Matches, so we have a list item or empty
+                if (sig.length) {
+                    return ['LI'];
+                } else {
+                    return [];
+                }
             }
-        }
-        // Start a nested list?
-        var currentSig = listStack.peek();
-        if (sig.substr(0, currentSig.length) === currentSig) {
-            if (currentSig) {
-                tokens.push('LI');
+
+            // Start a nested list?
+            var currentSig = listStack.peek();
+            if (sig.substr(0, currentSig.length) === currentSig) {
+                if (currentSig && currentSig != startSig) {
+                    tokens.push('LI');
+                }
+                tokens.push(tokensListStart[sig[currentSig.length]]);
+                listStack.push(sig.substr(0, currentSig.length+1));
+                lex.begin('list');
+                return tokens.concat(innerProcessList(lex, sig));
             }
-            tokens.push(tokensListStart[sig[currentSig.length]]);
-            listStack.push(sig.substr(0, currentSig.length+1));
-            lex.begin('list');
-            return tokens.concat(processList(lex, sig));
+            // End of list, stop one at a time.
+            tokens.push(tokensListEnd[currentSig[currentSig.length-1]]);
+            listStack.pop();
+            lex.popState();
+            return tokens.concat(innerProcessList(lex, sig));
         }
-        // End of list, stop one at a time.
-        tokens.push(tokensListEnd[currentSig[currentSig.length-1]]);
-        listStack.pop();
-        lex.popState();
-        return tokens.concat(processList(lex, sig));
+        return innerProcessList(lex, sig);
     }
 
 %}
@@ -670,11 +676,11 @@ list
     : OL list-items OL_E
         { $$ = {t:'ordered-list', c: $2}; }
     | UL list-items UL_E
-        { $$ = {t:'ordered-list', c: $2}; }
+        { $$ = {t:'unordered-list', c: $2}; }
     | DL list-items DL_E
-        { $$ = {t:'ordered-list', c: $2}; }
+        { $$ = {t:'unordered-list', c: $2}; }
     | INDENT list-items INDENT_E
-        { $$ = {t:'ordered-list', c: $2}; }
+        { $$ = {t:'indented-list', c: $2}; }
     ;
 
 list-items
@@ -687,6 +693,8 @@ list-items
 list-item
     : LI line-of-text
         { $$ = {t: 'list-item', c: [$2]}; }
+    | LI line-of-text list
+        { $$ = {t: 'list-item', c: [$2, $3]}; }
     | LI list
         { $$ = {t: 'list-item', c: [$2]}; }
     ;

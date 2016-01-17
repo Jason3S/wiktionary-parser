@@ -99,6 +99,14 @@ class RenderUnorderedList extends BaseNodeView {
     }
 }
 
+class RenderIndentedList extends BaseNodeView {
+    static registered = registerMap(RenderIndentedList, ['indented-list']);
+
+    public renderModel(model:IAstModel, value: AstValue, children: IAstModel[]) {
+        return (<ul className={'ast-'+model.t + ' indented-list'}>{BaseNodeView.renderChildren(children)}</ul>);
+    }
+}
+
 class RenderListItem extends BaseNodeView {
     static registered = registerMap(RenderListItem, ['list-item']);
 
@@ -170,7 +178,6 @@ class RenderLink extends BaseNodeView {
         return (<span className={'ast-'+model.t}>{"["}{BaseNodeView.renderChildren(c)}{"]"}</span>);
     }
 }
-
 
 
 class AstDocView extends React.Component<IAstProps, IEmptyState> {
