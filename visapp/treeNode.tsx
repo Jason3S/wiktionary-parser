@@ -15,8 +15,8 @@ class TreeNode extends React.Component<IAstProps, IAstState> {
 
 
     public render() {
-
-        var model:IAstModel = this.props.model || {t:''};
+        var props = this.props;
+        var model:IAstModel = props.model || {t:''};
         var hasChildren = model.c && model.c.length;
         var children = hasChildren && model.c
             ? model.c.map((node: IAstModel, index: number)=>{ return (<TreeNode key={index} model={node} />);})
@@ -25,7 +25,7 @@ class TreeNode extends React.Component<IAstProps, IAstState> {
         if (hasChildren) {
             return (
                 <div className="treeNode" >
-                    <label><input type="checkbox" onChange={()=>{this.toggleShowChildren();}}/> {this.props.model.t}</label>
+                    <label><input type="checkbox" onChange={()=>{this.toggleShowChildren();}}/> {model.t}</label>
                     <div className={this.state.showChildren ? 'show':'hidden'} >
                         {children}
                     </div>

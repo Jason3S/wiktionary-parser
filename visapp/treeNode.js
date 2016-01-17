@@ -14,14 +14,15 @@ var TreeNode = (function (_super) {
     }
     TreeNode.prototype.render = function () {
         var _this = this;
-        var model = this.props.model || { t: '' };
+        var props = this.props;
+        var model = props.model || { t: '' };
         var hasChildren = model.c && model.c.length;
         var children = hasChildren && model.c
             ? model.c.map(function (node, index) { return (React.createElement(TreeNode, {"key": index, "model": node})); })
             : null;
         var nodeValue = model.v || '';
         if (hasChildren) {
-            return (React.createElement("div", {"className": "treeNode"}, React.createElement("label", null, React.createElement("input", {"type": "checkbox", "onChange": function () { _this.toggleShowChildren(); }}), " ", this.props.model.t), React.createElement("div", {"className": this.state.showChildren ? 'show' : 'hidden'}, children)));
+            return (React.createElement("div", {"className": "treeNode"}, React.createElement("label", null, React.createElement("input", {"type": "checkbox", "onChange": function () { _this.toggleShowChildren(); }}), " ", model.t), React.createElement("div", {"className": this.state.showChildren ? 'show' : 'hidden'}, children)));
         }
         return (React.createElement("div", {"className": "treeNode"}, React.createElement("b", null, React.createElement("i", null, nodeValue.toString()))));
     };

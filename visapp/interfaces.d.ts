@@ -3,21 +3,25 @@
  */
 
 
+declare type AstValue = string|number|boolean;
+
 interface IAstModel {
     t: string;                  // type
     c?: IAstModel[];            // children
-    v?: string|number|boolean;  // value
+    v?: AstValue;               // value
 }
 
 
 interface IAstProps {
+    key? : string|number;
     model : IAstModel;
 }
-
 
 interface IAstState {
     showChildren? : boolean;
 }
+
+interface IEmptyState {}
 
 interface IAppProps {
     model : IAstModel;
