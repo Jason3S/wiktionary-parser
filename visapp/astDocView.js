@@ -61,7 +61,7 @@ var RenderChildren = (function (_super) {
     };
     RenderChildren.registered = registerMap(RenderChildren, [
         'article', 'paragraph', 'paragraphs', 'sections', 'line-of-text', 'lines-of-text', 'wiki-page',
-        'section1', 'section2', 'section3', 'section4', 'section5'
+        'section1', 'section2', 'section3', 'section4', 'section5', 'comment'
     ]);
     return RenderChildren;
 })(BaseNodeView);
@@ -154,6 +154,17 @@ var RenderItalic = (function (_super) {
     };
     RenderItalic.registered = registerMap(RenderItalic, ['italic-text']);
     return RenderItalic;
+})(BaseNodeView);
+var RenderHtml = (function (_super) {
+    __extends(RenderHtml, _super);
+    function RenderHtml() {
+        _super.apply(this, arguments);
+    }
+    RenderHtml.prototype.renderModel = function (model, value, children) {
+        return React.createElement(model.t, null, BaseNodeView.renderChildren(children));
+    };
+    RenderHtml.registered = registerMap(RenderHtml, ['sub', 'sup']);
+    return RenderHtml;
 })(BaseNodeView);
 var RenderTemplateParam = (function (_super) {
     __extends(RenderTemplateParam, _super);

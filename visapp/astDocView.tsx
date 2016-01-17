@@ -65,7 +65,7 @@ class RootNodeView extends BaseNodeView {}
 class RenderChildren extends BaseNodeView {
     static registered = registerMap(RenderChildren, [
         'article', 'paragraph', 'paragraphs', 'sections', 'line-of-text', 'lines-of-text', 'wiki-page',
-        'section1', 'section2', 'section3', 'section4', 'section5'
+        'section1', 'section2', 'section3', 'section4', 'section5', 'comment'
     ]);
 
     public renderModel(model:IAstModel, value: AstValue, children: IAstModel[]) {
@@ -136,6 +136,14 @@ class RenderItalic extends BaseNodeView {
 
     public renderModel(model:IAstModel, value: AstValue, children: IAstModel[]) {
         return (<i className={'ast-'+model.t}>{BaseNodeView.renderChildren(children)}</i>);
+    }
+}
+
+class RenderHtml extends BaseNodeView {
+    static registered = registerMap(RenderHtml, ['sub', 'sup']);
+
+    public renderModel(model:IAstModel, value: AstValue, children: IAstModel[]) {
+        return React.createElement(model.t, null, BaseNodeView.renderChildren(children));
     }
 }
 

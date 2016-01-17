@@ -68,4 +68,4 @@ function fetchTree(lang: string, word: string) {
 
 render();
 
-fetchTree('en', 'house');
+fetchTree('en', 'walk');

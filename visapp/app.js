@@ -48,5 +48,5 @@ function fetchTree(lang, word) {
     });
 }
 render();
-fetchTree('en', 'house');
+fetchTree('en', 'walk');
 //# sourceMappingURL=app.js.map

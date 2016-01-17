@@ -4,10 +4,23 @@
 }
 
 
-.indented-list {
-    border-left: 1px solid lightblue;
+.ast-indented-list {
+    border-left: 1px solid lightgrey;
+}
+
+.ast-ordered-list {
+    border-left: 1px solid lightpink;
+}
+
+.ast-unordered-list {
+    border-left: 1px solid lightgreen;
 }
 
 .indented-list > li {
     list-style-type: none;
+}
+
+.ast-comment {
+    font-style: italic;
+    color: gray;
 }

@@ -22,7 +22,7 @@ ListCharacters          [:#*;]
 NonListCharacters       [^:#*;]
 
 %s template link list
-%x nowiki
+%x nowiki comment
 
 %{
     function CreateListStack () {
@@ -35,16 +35,16 @@ NonListCharacters       [^:#*;]
     }
 
     var tokensListStart = {
-        "*":'UL',
-        "#":'OL',
-        ";":'DL',
-        ":":'INDENT'
+        '*' : 'UL',
+        '#' : 'OL',
+        ';' : 'DL',
+        ':' : 'INDENT'
     };
     var tokensListEnd = {
-        "*":'UL_E',
-        "#":'OL_E',
-        ";":'DL_E',
-        ":":'INDENT_E'
+        '*' : 'UL_E',
+        '#' : 'OL_E',
+        ';' : 'DL_E',
+        ':' : 'INDENT_E'
     };
 
     function processList(lex, sig) {
@@ -68,9 +68,6 @@ NonListCharacters       [^:#*;]
             // Start a nested list?
             var currentSig = listStack.peek();
             if (sig.substr(0, currentSig.length) === currentSig) {
-                if (currentSig && currentSig != startSig) {
-                    tokens.push('LI');
-                }
                 tokens.push(tokensListStart[sig[currentSig.length]]);
                 listStack.push(sig.substr(0, currentSig.length+1));
                 lex.begin('list');
@@ -99,21 +96,12 @@ NonListCharacters       [^:#*;]
                                             return 'H'+yytext.trim().length+'_BEG';
                                         }
                                     %}
-[{][{]	                            %{
-                                        this.begin('template'); return 'TEMPLATE_START';
-                                    %}
-<template>[}][}]                    %{
-                                        this.popState(); return 'TEMPLATE_END';
-                                    %}
+[{][{]	                            %{ this.begin('template'); return 'TEMPLATE_START'; %}
+<template>[}][}]                    %{ this.popState(); return 'TEMPLATE_END'; %}
 <template>[|]                       return 'TEMPLATE_PARAM_SEPARATOR'
-[[][[]	                            %{
-                                        this.begin('link'); return 'LINK_START';
-                                    %}
-<link>[\]][\]]                      %{
-                                        this.popState(); return 'LINK_END';
-                                    %}
+[[][[]	                            %{ this.begin('link'); return 'LINK_START'; %}
+<link>[\]][\]]                      %{ this.popState(); return 'LINK_END'; %}
 <link>[|]                           return 'LINK_PARAM_SEPARATOR'
-
 
 [<]\s*"nowiki"\s*[>]	            %{  /* <nowiki> */
                                         this.begin('nowiki'); return 'NO_WIKI_START';
@@ -121,7 +109,7 @@ NonListCharacters       [^:#*;]
 <nowiki>[<]\s*[/]"nowiki"\s*[>]     %{ /* </nowiki> */
                                         this.popState(); return 'NO_WIKI_END';
                                     %}
-<nowiki>.                           return 'TEXT'
+<nowiki>.|[\n]                      return 'TEXT'
 
 <list>{ListCharacters}+             %{  /* List Item */
                                         if (!yylloc.first_column) {
@@ -143,23 +131,31 @@ NonListCharacters       [^:#*;]
                                             return 'TEXT'; /* treat list characters in the middle of a line as text. */
                                         }
                                     %}
+"<!--"                              %{ this.begin('comment'); return 'COMMENT_START'; %}
+<comment>"-->"                      %{ this.popState(); return 'COMMENT_END'; %}
+<comment>.|[\n]                     return 'TEXT';
 
-[']+/{BoldItalics}($|[^'])          return 'TEXT'
-{BoldItalics}                       return 'BOLD_ITALICS'
-[']/{Bold}                          return 'TEXT'
-{Bold}                              return 'BOLD'
-{Italics}                           return 'ITALICS'
-[']                                 return 'TEXT'
-"\\u"[0-9a-fA-F]{4}                 return 'UNICODE'
-<<EOF>>                             return 'EOF'
+[']+/{BoldItalics}($|[^'])          return 'TEXT';
+{BoldItalics}                       return 'BOLD_ITALICS';
+[']/{Bold}                          return 'TEXT';
+{Bold}                              return 'BOLD';
+{Italics}                           return 'ITALICS';
+[']                                 return 'TEXT';
+"\\u"[0-9a-fA-F]{4}                 return 'UNICODE';
+"<sup>"                             return 'SUP';
+"</sup>"                            return 'SUP_E';
+"<sub>"                             return 'SUB';
+"</sub>"                            return 'SUB_E';
+<<EOF>>                             return 'EOF';
 (\r|\n|\n\r|\r\n)                   %{
                                         if (yylloc.first_column)
                                             return 'NEWLINE';
                                         else
                                             return 'EMPTY_LINE';
                                     %}
-{PlainText}+                        return 'TEXT'
-.                                   return 'TEXT'
+[&]\w+[;]                           return 'HTML_ENTITY';
+{PlainText}+                        return 'TEXT';
+.                                   return 'TEXT';
 
 %%
 
@@ -482,6 +478,8 @@ rich-text
     : bold-italics-text
     | plain-text
     | no-wiki
+    | simple-html
+    | comment
     ;
 
 plain-text
@@ -496,6 +494,8 @@ text-constant
         { $$ = $1 }
     | UNICODE
         { $$ = JSON.parse('"'+$1+'"'); }
+    | HTML_ENTITY
+        { $$ = html_entities.decode($1); }
     ;
 
 raw-text
@@ -517,6 +517,7 @@ bold-italics-content-item
     | no-wiki
     | link
     | template
+    | simple-html
     ;
 
 bold-content
@@ -672,6 +673,13 @@ link-param
         { $$ = $1; }
     ;
 
+lists
+    : list
+        { $$ = [$1]; }
+    | lists list
+        { $$ = $1.concat([$2]); }
+    ;
+
 list
     : OL list-items OL_E
         { $$ = {t:'ordered-list', c: $2}; }
@@ -693,10 +701,26 @@ list-items
 list-item
     : LI line-of-text
         { $$ = {t: 'list-item', c: [$2]}; }
-    | LI line-of-text list
-        { $$ = {t: 'list-item', c: [$2, $3]}; }
-    | LI list
-        { $$ = {t: 'list-item', c: [$2]}; }
+    | LI line-of-text lists
+        { $$ = {t: 'list-item', c: [$2].concat($3)}; }
+    | LI lists
+        { $$ = {t: 'list-item', c: $2}; }
+    ;
+
+simple-html
+    : SUP text-content SUP_E
+        { $$ = {t: 'sup', c: $2 }; }
+    | SUP SUP_E
+        { $$ = {t: 'sup', c: [] }; }
+    | SUB text-content SUB_E
+        { $$ = {t: 'sub', c: $2 }; }
+    | SUB SUB_E
+        { $$ = {t: 'sub', c: [] }; }
+    ;
+
+comment
+    : COMMENT_START plain-text COMMENT_END
+        { $$ = {t: 'comment', c: [$2] }; }
     ;
 
 end-of-file
@@ -706,3 +730,5 @@ end-of-file
 
 %%
 
+var Entities = require('html-entities').AllHtmlEntities;
+var html_entities = new Entities();
