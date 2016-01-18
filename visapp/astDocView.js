@@ -49,6 +49,9 @@ var RootNodeView = (function (_super) {
     function RootNodeView() {
         _super.apply(this, arguments);
     }
+    RootNodeView.prototype.renderModel = function (model, value, children) {
+        return (React.createElement("div", null, BaseNodeView.renderChildren([model])));
+    };
     return RootNodeView;
 })(BaseNodeView);
 var RenderChildren = (function (_super) {
@@ -177,6 +180,17 @@ var RenderTemplateParam = (function (_super) {
     RenderTemplateParam.registered = registerMap(RenderTemplateParam, ['template-param']);
     return RenderTemplateParam;
 })(BaseNodeView);
+var RenderParseError = (function (_super) {
+    __extends(RenderParseError, _super);
+    function RenderParseError() {
+        _super.apply(this, arguments);
+    }
+    RenderParseError.prototype.renderModel = function (model, value, children) {
+        return (React.createElement("pre", {"className": 'ast-' + model.t}, value));
+    };
+    RenderParseError.registered = registerMap(RenderParseError, ['parse-error']);
+    return RenderParseError;
+})(BaseNodeView);
 var RenderSectionTitle = (function (_super) {
     __extends(RenderSectionTitle, _super);
     function RenderSectionTitle() {
@@ -223,7 +237,7 @@ var AstDocView = (function (_super) {
         _super.apply(this, arguments);
     }
     AstDocView.prototype.render = function () {
-        return (React.createElement("div", {"className": "docView"}, React.createElement("b", null, React.createElement("i", null, "Doc View")), React.createElement(RootNodeView, {"model": this.props.model})));
+        return (React.createElement("div", {"className": "docView"}, React.createElement("b", null, React.createElement("i", null, "Doc View")), React.createElement("br", null), React.createElement(RootNodeView, {"model": this.props.model})));
     };
     return AstDocView;
 })(React.Component);

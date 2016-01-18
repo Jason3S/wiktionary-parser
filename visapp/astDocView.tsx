@@ -5,6 +5,7 @@ import React = require('react');
 import ReactDOM = require('react-dom');
 import * as _ from 'lodash';
 import jQuery = require('jquery');
+import ReactElement = __React.ReactElement;
 
 interface IAstViewProps extends IAstProps {}
 
@@ -59,8 +60,17 @@ class BaseNodeView extends React.Component<IAstViewProps, IEmptyState> {
     }
 }
 
-class RootNodeView extends BaseNodeView {}
 
+class RootNodeView extends BaseNodeView {
+    public renderModel(model:IAstModel, value: AstValue, children: IAstModel[]) {
+        return (
+            <div>
+                {BaseNodeView.renderChildren([model])}
+            </div>
+        );
+    }
+
+}
 
 class RenderChildren extends BaseNodeView {
     static registered = registerMap(RenderChildren, [
@@ -155,6 +165,14 @@ class RenderTemplateParam extends BaseNodeView {
     }
 }
 
+class RenderParseError extends BaseNodeView {
+    static registered = registerMap(RenderParseError, ['parse-error']);
+
+    public renderModel(model:IAstModel, value: AstValue, children: IAstModel[]) {
+        return (<pre className={'ast-'+model.t}>{value}</pre>);
+    }
+}
+
 class RenderSectionTitle extends BaseNodeView {
     static registered = registerMap(RenderSectionTitle, [
         'section1-title', 'section2-title', 'section3-title', 'section4-title', 'section5-title'
@@ -193,7 +211,7 @@ class AstDocView extends React.Component<IAstProps, IEmptyState> {
     public render() {
         return (
             <div className="docView" >
-                <b><i>Doc View</i></b>
+                <b><i>Doc View</i></b><br/>
                 <RootNodeView model={this.props.model}/>
             </div>
         );

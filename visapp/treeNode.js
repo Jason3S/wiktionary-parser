@@ -24,7 +24,7 @@ var TreeNode = (function (_super) {
         if (hasChildren) {
             return (React.createElement("div", {"className": "treeNode"}, React.createElement("label", null, React.createElement("input", {"type": "checkbox", "onChange": function () { _this.toggleShowChildren(); }}), " ", model.t), React.createElement("div", {"className": this.state.showChildren ? 'show' : 'hidden'}, children)));
         }
-        return (React.createElement("div", {"className": "treeNode"}, React.createElement("b", null, React.createElement("i", null, nodeValue.toString()))));
+        return (React.createElement("div", {"className": "treeNode"}, React.createElement("b", null, model.t, ": "), React.createElement("i", null, nodeValue.toString().substr(0, 50))));
     };
     TreeNode.prototype.toggleShowChildren = function () {
         this.setState({ showChildren: !this.state.showChildren });

@@ -24,3 +24,11 @@
     font-style: italic;
     color: gray;
 }
+
+.ast-link {
+    color: darkblue;
+}
+
+.ast-template {
+    color: darkgreen;
+}

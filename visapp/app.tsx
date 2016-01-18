@@ -7,65 +7,49 @@
 
 import React = require('react');
 import ReactDOM = require('react-dom');
-import * as _ from 'lodash';
-import jQuery = require('jquery');
-import wikiParser = require('../lib/wiki-parser');
-import Dictionary = _.Dictionary;
-import { TreeNode } from "./treeNode";
-import { AstDocView } from "./astDocView";
+import { AstViewer, IAstViewerProps } from './astViewer';
+import { browserHistory, Router, Route, Link } from 'react-router'
 
 
-var tree: IAstModel = {t:'root'};
+interface IAstAppState {
+    lang: string;
+    word: string;
+}
+
+interface IAstAppProps {
+    params: {
+        lang?: string;
+        word?: string;
+    };
+}
+
+class AstApp extends React.Component<IAstAppProps, {}> {
+
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        const { lang, word } = this.props.params;
+        let defaultLang = 'en';
+        let defaultWord = 'walk';
+        return (
+            <AstViewer lang={lang||defaultLang} word={word||defaultWord}/>
+        );
+    }
+}
 
 
 function render() {
-    ReactDOM.render(
-        <div>Wiki AST <TreeNode model={tree}/></div>,
-        document.getElementsByClassName('ast-tree-view')[0]
+    ReactDOM.render((
+            <Router history={browserHistory}>
+                <Route path="/(:lang/:word)" component={AstApp}>
+                </Route>
+            </Router>
+        ),
+        document.getElementById('content-container')
     );
-    ReactDOM.render(
-        <div>Document: <AstDocView model={tree}/></div>,
-        document.getElementsByClassName('ast-doc-view')[0]
-    );
-}
-
-function fetchTree(lang: string, word: string) {
-
-    var params:Dictionary<string> = {
-        action : 'query',
-        prop :   'revisions|info',
-        rvprop : 'content',
-        format : 'json',
-        titles : word
-    };
-
-    var uri = 'https://' + lang + '.wiktionary.org/w/api.php?';
-
-    var url = uri + _
-            .map(params,function(value:string, key:string){ return encodeURIComponent(key) + '=' + encodeURIComponent(value); })
-            .join('&');
-
-    jQuery.ajax({
-        url: url,
-        dataType: 'jsonp',
-        crossDomain: true
-    }).then((result)=>{
-        var pages = _(result.query.pages)
-            .filter((p)=>{ return p.title == word && p.pagelanguage==lang;})
-            .map((p:any)=>{ return p.revisions; })
-            .filter((p)=>{ return p; })
-            .map((p:any)=>{ return p[0]; })
-            .filter((p)=>{ return p; })
-            .map((p:any)=>{ return p['*'];})
-            .filter((p)=>{ return p; })
-            .value();
-        pages = pages || [];
-        var markup = pages[0] || '';
-        tree = wikiParser.parse(markup);
-        render();
-    });
 }
 
 render();
 
-fetchTree('en', 'walk');

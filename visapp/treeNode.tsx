@@ -34,7 +34,8 @@ class TreeNode extends React.Component<IAstProps, IAstState> {
         }
         return (
             <div className="treeNode" >
-                <b><i>{nodeValue.toString()}</i></b>
+                <b>{model.t}: </b>
+                <i>{nodeValue.toString().substr(0, 50)}</i>
             </div>
         );
     }

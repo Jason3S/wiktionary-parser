@@ -1,52 +1,32 @@
 /**
  * Created by jasondent on 16/01/2016.
  */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 /// <reference path="../typings/tsd.d.ts" />
 /// <reference path="./interfaces.d.ts"/>
 var React = require('react');
 var ReactDOM = require('react-dom');
-var _ = require('lodash');
-var jQuery = require('jquery');
-var wikiParser = require('../lib/wiki-parser');
-var treeNode_1 = require("./treeNode");
-var astDocView_1 = require("./astDocView");
-var tree = { t: 'root' };
-function render() {
-    ReactDOM.render(React.createElement("div", null, "Wiki AST ", React.createElement(treeNode_1.TreeNode, {"model": tree})), document.getElementsByClassName('ast-tree-view')[0]);
-    ReactDOM.render(React.createElement("div", null, "Document: ", React.createElement(astDocView_1.AstDocView, {"model": tree})), document.getElementsByClassName('ast-doc-view')[0]);
-}
-function fetchTree(lang, word) {
-    var params = {
-        action: 'query',
-        prop: 'revisions|info',
-        rvprop: 'content',
-        format: 'json',
-        titles: word
+var astViewer_1 = require('./astViewer');
+var react_router_1 = require('react-router');
+var AstApp = (function (_super) {
+    __extends(AstApp, _super);
+    function AstApp(props) {
+        _super.call(this, props);
+    }
+    AstApp.prototype.render = function () {
+        var _a = this.props.params, lang = _a.lang, word = _a.word;
+        var defaultLang = 'en';
+        var defaultWord = 'walk';
+        return (React.createElement(astViewer_1.AstViewer, {"lang": lang || defaultLang, "word": word || defaultWord}));
     };
-    var uri = 'https://' + lang + '.wiktionary.org/w/api.php?';
-    var url = uri + _
-        .map(params, function (value, key) { return encodeURIComponent(key) + '=' + encodeURIComponent(value); })
-        .join('&');
-    jQuery.ajax({
-        url: url,
-        dataType: 'jsonp',
-        crossDomain: true
-    }).then(function (result) {
-        var pages = _(result.query.pages)
-            .filter(function (p) { return p.title == word && p.pagelanguage == lang; })
-            .map(function (p) { return p.revisions; })
-            .filter(function (p) { return p; })
-            .map(function (p) { return p[0]; })
-            .filter(function (p) { return p; })
-            .map(function (p) { return p['*']; })
-            .filter(function (p) { return p; })
-            .value();
-        pages = pages || [];
-        var markup = pages[0] || '';
-        tree = wikiParser.parse(markup);
-        render();
-    });
+    return AstApp;
+})(React.Component);
+function render() {
+    ReactDOM.render((React.createElement(react_router_1.Router, {"history": react_router_1.browserHistory}, React.createElement(react_router_1.Route, {"path": "/(:lang/:word)", "component": AstApp}))), document.getElementById('content-container'));
 }
 render();
-fetchTree('en', 'walk');
 //# sourceMappingURL=app.js.map
