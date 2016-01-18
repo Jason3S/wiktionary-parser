@@ -7,6 +7,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var React = require('react');
 var _ = require('lodash');
+var react_router_1 = require('react-router');
 var mapTypeToViewNodes = {};
 function registerMap(conFn, relevantTypes) {
     var map = _.forEach(relevantTypes, function (type) { mapTypeToViewNodes[type] = conFn; });
@@ -17,9 +18,10 @@ var BaseNodeView = (function (_super) {
     function BaseNodeView() {
         _super.apply(this, arguments);
     }
-    BaseNodeView.renderChildren = function (children) {
+    BaseNodeView.prototype.renderChildren = function (children) {
+        var _this = this;
         if (children.length) {
-            return (children.map(function (model, key) { return BaseNodeView.renderChild(key, model); }));
+            return (children.map(function (model, key) { return _this.renderChild(key, model); }));
         }
         return (React.createElement("span", null, "{{empty}}"));
     };
@@ -27,7 +29,7 @@ var BaseNodeView = (function (_super) {
         if (value !== undefined) {
             return (React.createElement("span", null, value));
         }
-        return (React.createElement("div", {"className": "docView"}, React.createElement("b", null, React.createElement("i", null, model.t)), React.createElement("div", null, BaseNodeView.renderChildren(children))));
+        return (React.createElement("div", {"className": "docView"}, React.createElement("b", null, React.createElement("i", null, model.t)), React.createElement("div", null, this.renderChildren(children))));
     };
     BaseNodeView.prototype.render = function () {
         var model = this.props.model;
@@ -35,10 +37,11 @@ var BaseNodeView = (function (_super) {
         var children = model.c || [];
         return this.renderModel(model, value, children);
     };
-    BaseNodeView.renderChild = function (key, model) {
+    BaseNodeView.prototype.renderChild = function (key, model) {
+        var query = this.props.query;
         if (model) {
             var viewClassConstructor = mapTypeToViewNodes[model.t] || BaseNodeView;
-            return React.createElement(viewClassConstructor, { key: key, model: model });
+            return React.createElement(viewClassConstructor, { key: key, model: model, query: query });
         }
         return (React.createElement("span", null, "{{null}}"));
     };
@@ -50,7 +53,7 @@ var RootNodeView = (function (_super) {
         _super.apply(this, arguments);
     }
     RootNodeView.prototype.renderModel = function (model, value, children) {
-        return (React.createElement("div", null, BaseNodeView.renderChildren([model])));
+        return (React.createElement("div", null, this.renderChildren([model])));
     };
     return RootNodeView;
 })(BaseNodeView);
@@ -60,7 +63,7 @@ var RenderChildren = (function (_super) {
         _super.apply(this, arguments);
     }
     RenderChildren.prototype.renderModel = function (model, value, children) {
-        return (React.createElement("div", {"className": 'ast-' + model.t}, BaseNodeView.renderChildren(children)));
+        return (React.createElement("div", {"className": 'ast-' + model.t}, this.renderChildren(children)));
     };
     RenderChildren.registered = registerMap(RenderChildren, [
         'article', 'paragraph', 'paragraphs', 'sections', 'line-of-text', 'lines-of-text', 'wiki-page',
@@ -74,7 +77,7 @@ var RenderSectionContent = (function (_super) {
         _super.apply(this, arguments);
     }
     RenderSectionContent.prototype.renderModel = function (model, value, children) {
-        return (React.createElement("div", {"className": 'ast-' + model.t + ' treeNode'}, BaseNodeView.renderChildren(children)));
+        return (React.createElement("div", {"className": 'ast-' + model.t + ' treeNode'}, this.renderChildren(children)));
     };
     RenderSectionContent.registered = registerMap(RenderSectionContent, [
         'section1-content', 'section2-content', 'section3-content', 'section4-content', 'section5-content'
@@ -87,7 +90,7 @@ var RenderOrderedList = (function (_super) {
         _super.apply(this, arguments);
     }
     RenderOrderedList.prototype.renderModel = function (model, value, children) {
-        return (React.createElement("ol", {"className": 'ast-' + model.t}, BaseNodeView.renderChildren(children)));
+        return (React.createElement("ol", {"className": 'ast-' + model.t}, this.renderChildren(children)));
     };
     RenderOrderedList.registered = registerMap(RenderOrderedList, ['ordered-list']);
     return RenderOrderedList;
@@ -98,7 +101,7 @@ var RenderUnorderedList = (function (_super) {
         _super.apply(this, arguments);
     }
     RenderUnorderedList.prototype.renderModel = function (model, value, children) {
-        return (React.createElement("ul", {"className": 'ast-' + model.t}, BaseNodeView.renderChildren(children)));
+        return (React.createElement("ul", {"className": 'ast-' + model.t}, this.renderChildren(children)));
     };
     RenderUnorderedList.registered = registerMap(RenderUnorderedList, ['unordered-list']);
     return RenderUnorderedList;
@@ -109,7 +112,7 @@ var RenderIndentedList = (function (_super) {
         _super.apply(this, arguments);
     }
     RenderIndentedList.prototype.renderModel = function (model, value, children) {
-        return (React.createElement("ul", {"className": 'ast-' + model.t + ' indented-list'}, BaseNodeView.renderChildren(children)));
+        return (React.createElement("ul", {"className": 'ast-' + model.t + ' indented-list'}, this.renderChildren(children)));
     };
     RenderIndentedList.registered = registerMap(RenderIndentedList, ['indented-list']);
     return RenderIndentedList;
@@ -120,7 +123,7 @@ var RenderListItem = (function (_super) {
         _super.apply(this, arguments);
     }
     RenderListItem.prototype.renderModel = function (model, value, children) {
-        return (React.createElement("li", {"className": 'ast-' + model.t}, BaseNodeView.renderChildren(children)));
+        return (React.createElement("li", {"className": 'ast-' + model.t}, this.renderChildren(children)));
     };
     RenderListItem.registered = registerMap(RenderListItem, ['list-item']);
     return RenderListItem;
@@ -131,7 +134,7 @@ var RenderSpan = (function (_super) {
         _super.apply(this, arguments);
     }
     RenderSpan.prototype.renderModel = function (model, value, children) {
-        return (React.createElement("span", {"className": 'ast-' + model.t}, BaseNodeView.renderChildren(children)));
+        return (React.createElement("span", {"className": 'ast-' + model.t}, this.renderChildren(children)));
     };
     RenderSpan.registered = registerMap(RenderSpan, ['text', 'template-name', 'template-param']);
     return RenderSpan;
@@ -142,7 +145,7 @@ var RenderBold = (function (_super) {
         _super.apply(this, arguments);
     }
     RenderBold.prototype.renderModel = function (model, value, children) {
-        return (React.createElement("b", {"className": 'ast-' + model.t}, BaseNodeView.renderChildren(children)));
+        return (React.createElement("b", {"className": 'ast-' + model.t}, this.renderChildren(children)));
     };
     RenderBold.registered = registerMap(RenderBold, ['bold-text']);
     return RenderBold;
@@ -153,7 +156,7 @@ var RenderItalic = (function (_super) {
         _super.apply(this, arguments);
     }
     RenderItalic.prototype.renderModel = function (model, value, children) {
-        return (React.createElement("i", {"className": 'ast-' + model.t}, BaseNodeView.renderChildren(children)));
+        return (React.createElement("i", {"className": 'ast-' + model.t}, this.renderChildren(children)));
     };
     RenderItalic.registered = registerMap(RenderItalic, ['italic-text']);
     return RenderItalic;
@@ -164,7 +167,7 @@ var RenderHtml = (function (_super) {
         _super.apply(this, arguments);
     }
     RenderHtml.prototype.renderModel = function (model, value, children) {
-        return React.createElement(model.t, null, BaseNodeView.renderChildren(children));
+        return React.createElement(model.t, null, this.renderChildren(children));
     };
     RenderHtml.registered = registerMap(RenderHtml, ['sub', 'sup']);
     return RenderHtml;
@@ -175,7 +178,7 @@ var RenderTemplateParam = (function (_super) {
         _super.apply(this, arguments);
     }
     RenderTemplateParam.prototype.renderModel = function (model, value, children) {
-        return (React.createElement("span", {"className": 'ast-' + model.t}, "|", BaseNodeView.renderChildren(children)));
+        return (React.createElement("span", {"className": 'ast-' + model.t}, "|", this.renderChildren(children)));
     };
     RenderTemplateParam.registered = registerMap(RenderTemplateParam, ['template-param']);
     return RenderTemplateParam;
@@ -199,7 +202,7 @@ var RenderSectionTitle = (function (_super) {
     RenderSectionTitle.prototype.renderModel = function (model, value, children) {
         var type = model.t;
         var elem = 'h' + type.replace(/^.*?([0-5]).*$/, '$1');
-        return React.createElement(elem, null, BaseNodeView.renderChildren(children));
+        return React.createElement(elem, null, this.renderChildren(children));
     };
     RenderSectionTitle.registered = registerMap(RenderSectionTitle, [
         'section1-title', 'section2-title', 'section3-title', 'section4-title', 'section5-title'
@@ -212,7 +215,7 @@ var RenderTemplate = (function (_super) {
         _super.apply(this, arguments);
     }
     RenderTemplate.prototype.renderModel = function (model, value, children) {
-        return (React.createElement("span", {"className": 'ast-' + model.t}, "{{", BaseNodeView.renderChildren(children), "}}"));
+        return (React.createElement("span", {"className": 'ast-' + model.t}, "{{", this.renderChildren(children), "}}"));
     };
     RenderTemplate.registered = registerMap(RenderTemplate, ['template']);
     return RenderTemplate;
@@ -223,10 +226,17 @@ var RenderLink = (function (_super) {
         _super.apply(this, arguments);
     }
     RenderLink.prototype.renderModel = function (model, value, children) {
+        var params = children.map(function (n) { return n.v; });
+        if ([1, 2].indexOf(params.length) >= 0 && (params[0] + '').match(/^(\w| |[-])+$/)) {
+            var query = this.props.query;
+            var param = params[0];
+            var textNode = children[1] || children[0];
+            return (React.createElement("span", {"className": 'ast-' + model.t}, React.createElement(react_router_1.Link, {"to": "/" + query.lang + "/" + param}, this.renderChildren([textNode]))));
+        }
         var spacer = { t: 'plain-text', v: '|' };
         var spacers = _.fill(new Array(children.length), spacer);
         var c = _.flatten(_.zip(children, spacers)).slice(0, -1);
-        return (React.createElement("span", {"className": 'ast-' + model.t}, "[", BaseNodeView.renderChildren(c), "]"));
+        return (React.createElement("span", {"className": 'ast-' + model.t}, "[", this.renderChildren(c), "]"));
     };
     RenderLink.registered = registerMap(RenderLink, ['link']);
     return RenderLink;
@@ -237,7 +247,8 @@ var AstDocView = (function (_super) {
         _super.apply(this, arguments);
     }
     AstDocView.prototype.render = function () {
-        return (React.createElement("div", {"className": "docView"}, React.createElement("b", null, React.createElement("i", null, "Doc View")), React.createElement("br", null), React.createElement(RootNodeView, {"model": this.props.model})));
+        var props = this.props;
+        return (React.createElement("div", {"className": "docView"}, React.createElement("b", null, React.createElement("i", null, "Doc View")), React.createElement("br", null), React.createElement(RootNodeView, React.__spread({}, props))));
     };
     return AstDocView;
 })(React.Component);

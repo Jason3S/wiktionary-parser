@@ -10,7 +10,8 @@ var TreeNode = (function (_super) {
     __extends(TreeNode, _super);
     function TreeNode(props) {
         _super.call(this, props);
-        this.state = { showChildren: false };
+        var model = props.model;
+        this.state = { showChildren: true };
     }
     TreeNode.prototype.render = function () {
         var _this = this;
@@ -18,7 +19,7 @@ var TreeNode = (function (_super) {
         var model = props.model || { t: '' };
         var hasChildren = model.c && model.c.length;
         var children = hasChildren && model.c
-            ? model.c.map(function (node, index) { return (React.createElement(TreeNode, {"key": index, "model": node})); })
+            ? model.c.map(function (node, index) { return (React.createElement(TreeNode, {"key": index, "model": node, "query": props.query})); })
             : null;
         var nodeValue = model.v || '';
         if (hasChildren) {

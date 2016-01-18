@@ -8,19 +8,11 @@
 import React = require('react');
 import ReactDOM = require('react-dom');
 import { AstViewer, IAstViewerProps } from './astViewer';
-import { browserHistory, Router, Route, Link } from 'react-router'
+import { browserHistory, Router, Route, Link } from 'react-router';
 
-
-interface IAstAppState {
-    lang: string;
-    word: string;
-}
 
 interface IAstAppProps {
-    params: {
-        lang?: string;
-        word?: string;
-    };
+    params?: IAstQuery;
 }
 
 class AstApp extends React.Component<IAstAppProps, {}> {

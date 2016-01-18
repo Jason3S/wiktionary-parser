@@ -27,9 +27,11 @@ interface IAstViewerProps {
 
 class AstViewer extends React.Component<IAstViewerProps, IAstViewerState> {
 
+    static defaultState : IAstViewerState = { tree: {t:'root'} };
+
     constructor(props : IAstViewerProps) {
         super(props);
-        this.state = { tree: {t:'root'} };
+        this.state = AstViewer.defaultState;
         this.fetchTree(props.lang, props.word);
     }
 
@@ -77,17 +79,34 @@ class AstViewer extends React.Component<IAstViewerProps, IAstViewerState> {
         });
     }
 
+    componentWillReceiveProps(newProps : IAstViewerProps) {
+        const { props } = this;
+        const isChanged = props.lang != newProps.lang || props.word != newProps.word;
+        if (isChanged) {
+            this.setState(AstViewer.defaultState);
+            this.fetchTree(newProps.lang, newProps.word);
+        }
+    }
+
     render() {
-        return (
-        <div className="row">
-            <div className="col-md-4 ast-tree-view">Wiki AST
-                <TreeNode model={this.state.tree}/>
+        const { lang, word } = this.props;
+        return ((
+            <div>
+                <div className="row">
+                    <div className="col-md-12">
+                        Language: {lang}, Word: {word}
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-4 ast-tree-view">Wiki AST
+                        <TreeNode model={this.state.tree} query={this.props}/>
+                    </div>
+                    <div className="col-md-8 ast-doc-view">Document:
+                        <AstDocView model={this.state.tree} query={this.props}/>
+                    </div>
+                </div>
             </div>
-            <div className="col-md-8 ast-doc-view">Document:
-                <AstDocView model={this.state.tree}/>
-            </div>
-        </div>
-        );
+        ));
     }
 }
 

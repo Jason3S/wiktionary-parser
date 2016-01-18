@@ -6,11 +6,13 @@ import ReactDOM = require('react-dom');
 import * as _ from 'lodash';
 import jQuery = require('jquery');
 
+
 class TreeNode extends React.Component<IAstProps, IAstState> {
 
     constructor(props : IAstProps){
         super(props);
-        this.state = { showChildren: false };
+        const { model } = props;
+        this.state = { showChildren: true };
     }
 
 
@@ -19,7 +21,7 @@ class TreeNode extends React.Component<IAstProps, IAstState> {
         var model:IAstModel = props.model || {t:''};
         var hasChildren = model.c && model.c.length;
         var children = hasChildren && model.c
-            ? model.c.map((node: IAstModel, index: number)=>{ return (<TreeNode key={index} model={node} />);})
+            ? model.c.map((node: IAstModel, index: number)=>{ return (<TreeNode key={index} model={node} query={props.query} />);})
             : null;
         var nodeValue = model.v || '';
         if (hasChildren) {

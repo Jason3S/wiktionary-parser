@@ -18,7 +18,7 @@ var AstViewer = (function (_super) {
     __extends(AstViewer, _super);
     function AstViewer(props) {
         _super.call(this, props);
-        this.state = { tree: { t: 'root' } };
+        this.state = AstViewer.defaultState;
         this.fetchTree(props.lang, props.word);
     }
     AstViewer.prototype.fetchTree = function (lang, word) {
@@ -61,9 +61,19 @@ var AstViewer = (function (_super) {
             _this.setState({ tree: tree });
         });
     };
-    AstViewer.prototype.render = function () {
-        return (React.createElement("div", {"className": "row"}, React.createElement("div", {"className": "col-md-4 ast-tree-view"}, "Wiki AST", React.createElement(treeNode_1.TreeNode, {"model": this.state.tree})), React.createElement("div", {"className": "col-md-8 ast-doc-view"}, "Document:", React.createElement(astDocView_1.AstDocView, {"model": this.state.tree}))));
+    AstViewer.prototype.componentWillReceiveProps = function (newProps) {
+        var props = this.props;
+        var isChanged = props.lang != newProps.lang || props.word != newProps.word;
+        if (isChanged) {
+            this.setState(AstViewer.defaultState);
+            this.fetchTree(newProps.lang, newProps.word);
+        }
     };
+    AstViewer.prototype.render = function () {
+        var _a = this.props, lang = _a.lang, word = _a.word;
+        return ((React.createElement("div", null, React.createElement("div", {"className": "row"}, React.createElement("div", {"className": "col-md-12"}, "Language: ", lang, ", Word: ", word)), React.createElement("div", {"className": "row"}, React.createElement("div", {"className": "col-md-4 ast-tree-view"}, "Wiki AST", React.createElement(treeNode_1.TreeNode, {"model": this.state.tree, "query": this.props})), React.createElement("div", {"className": "col-md-8 ast-doc-view"}, "Document:", React.createElement(astDocView_1.AstDocView, {"model": this.state.tree, "query": this.props}))))));
+    };
+    AstViewer.defaultState = { tree: { t: 'root' } };
     return AstViewer;
 })(React.Component);
 exports.AstViewer = AstViewer;

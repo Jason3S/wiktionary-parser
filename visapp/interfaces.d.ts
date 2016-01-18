@@ -12,8 +12,14 @@ interface IAstModel {
 }
 
 
+interface IAstQuery {
+    lang: string;
+    word: string;
+}
+
 interface IAstProps {
     key? : string|number;
+    query: IAstQuery;
     model : IAstModel;
 }
 
@@ -23,11 +29,3 @@ interface IAstState {
 
 interface IEmptyState {}
 
-interface IAppProps {
-    model : IAstModel;
-}
-
-interface IAppState {
-    editing? : string;
-    nowShowing? : string
-}
