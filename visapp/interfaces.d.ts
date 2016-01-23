@@ -2,6 +2,7 @@
  * Created by jasondent on 16/01/2016.
  */
 
+/// <reference path="../node_modules/immutable/dist/immutable.d.ts"/>
 
 declare type AstValue = string|number|boolean;
 

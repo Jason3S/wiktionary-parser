@@ -5,6 +5,7 @@
 /// <reference path="../typings/tsd.d.ts" />
 /// <reference path="./interfaces.d.ts"/>
 
+import Immutable = require('immutable');
 import React = require('react');
 import ReactDOM = require('react-dom');
 import { AstViewer, IAstViewerProps } from './astViewer';

@@ -51,7 +51,7 @@
       "commit": "dc9dabe74a5be62613b17a3605309783a12ff28a"
     },
     "react/react.d.ts": {
-      "commit": "70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e"
+      "commit": "0bc09e91dd6f2d34b14af4367a138d34f437a5d4"
     },
     "rx/rx.d.ts": {
       "commit": "70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e"
@@ -140,11 +140,17 @@
     "jquery/jquery.d.ts": {
       "commit": "70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e"
     },
-    "react-router/react-router.d.ts": {
-      "commit": "70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e"
+    "redux/redux.d.ts": {
+      "commit": "0bc09e91dd6f2d34b14af4367a138d34f437a5d4"
     },
     "react-router/history.d.ts": {
-      "commit": "70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e"
+      "commit": "0bc09e91dd6f2d34b14af4367a138d34f437a5d4"
+    },
+    "react-router/react-router.d.ts": {
+      "commit": "0bc09e91dd6f2d34b14af4367a138d34f437a5d4"
+    },
+    "react-redux/react-redux.d.ts": {
+      "commit": "0bc09e91dd6f2d34b14af4367a138d34f437a5d4"
     }
   }
 }
