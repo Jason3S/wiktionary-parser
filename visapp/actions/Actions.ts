@@ -30,3 +30,7 @@ export function requestPage(request: PageRequest) : Action {
 }
 
 
+export function applyAst(ast: IAstModel) {
+    return { type: Actions.APPLY_AST, payload: ast };
+}
+

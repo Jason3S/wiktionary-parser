@@ -10,18 +10,17 @@ import React = require('react');
 import ReactDOM = require('react-dom');
 import { AstViewer, IAstViewerProps } from './components/astViewer';
 import { browserHistory, Router, Route, Link } from 'react-router';
+import { visApp } from './reducers/visapp';
+import Rx = require('rx');
+import Redux = require('redux');
 
+let store = Redux.createStore(visApp);
 
 interface IAstAppProps {
     params?: IAstQuery;
 }
 
 class AstApp extends React.Component<IAstAppProps, {}> {
-
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         const { lang, word } = this.props.params;
         let defaultLang = 'en';
@@ -32,11 +31,19 @@ class AstApp extends React.Component<IAstAppProps, {}> {
     }
 }
 
+class AppPageRequest extends React.Component<IAstAppProps, {}> {
+    render() {
+        const { lang, word } = this.props.params;
+        console.log(this.props);
+        return <AstApp params={{lang, word}}/>;
+    }
+}
+
 
 function render() {
     ReactDOM.render((
             <Router history={browserHistory}>
-                <Route path="/(:lang/:word)" component={AstApp}>
+                <Route path="/(:lang/:word)" component={AppPageRequest}>
                 </Route>
             </Router>
         ),
@@ -45,4 +52,15 @@ function render() {
 }
 
 render();
+
+/*
+import { fetchWikiMarkup } from './lib/WikiApi';
+
+var observable = fetchWikiMarkup('en', 'hello', 'wiktionary.org');
+
+export var result = '';
+
+observable.subscribe((markup)=>{result = markup;});
+*/
+
 

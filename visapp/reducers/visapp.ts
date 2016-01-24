@@ -24,6 +24,9 @@ const initialState : State = {
 };
 
 
-function visApp(state: State, action: Action): State {
+export function visApp(state: State, action: Action): State {
+    if (state === undefined) {
+        state = initialState;
+    }
     return state;
 }
