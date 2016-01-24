@@ -2,18 +2,18 @@
  * Created by jasondent on 16/01/2016.
  */
 
-/// <reference path="../typings/tsd.d.ts" />
-/// <reference path="./interfaces.d.ts"/>
+/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="./../interfaces.d.ts"/>
 
 import React = require('react');
 import ReactDOM = require('react-dom');
 import * as _ from 'lodash';
 import jQuery = require('jquery');
-import wikiParser = require('../lib/wiki-parser');
+import wikiParser = require('../../lib/wiki-parser');
 import Dictionary = _.Dictionary;
 import { TreeNode } from "./treeNode";
 import { AstDocView } from "./astDocView";
-import { IWiktionaryQueryResult } from "../lib/wiktionary/wiktionary-reader";
+import { IWiktionaryQueryResult } from "../../lib/wiktionary/wiktionary-reader";
 
 interface IAstViewerState {
     tree: IAstModel;

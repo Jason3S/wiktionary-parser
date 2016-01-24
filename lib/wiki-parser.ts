@@ -7,5 +7,6 @@ var wiktionary = require('../jison/wiktionary');
 import { WikiAbstractSyntaxTree } from "./wiki-ast";
 
 export function parse(text:string):WikiAbstractSyntaxTree {
-    return wiktionary.parse(text);
+    let parser = new wiktionary.Parser();
+    return parser.parse(text);
 }

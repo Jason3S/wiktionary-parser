@@ -1,5 +1,5 @@
-/// <reference path="../typings/tsd.d.ts" />
-/// <reference path="./interfaces.d.ts"/>
+/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="./../interfaces.d.ts"/>
 
 import React = require('react');
 import ReactDOM = require('react-dom');

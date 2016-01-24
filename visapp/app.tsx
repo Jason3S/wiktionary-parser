@@ -8,7 +8,7 @@
 import Immutable = require('immutable');
 import React = require('react');
 import ReactDOM = require('react-dom');
-import { AstViewer, IAstViewerProps } from './astViewer';
+import { AstViewer, IAstViewerProps } from './components/astViewer';
 import { browserHistory, Router, Route, Link } from 'react-router';
 
 

@@ -12,10 +12,14 @@ interface IAstModel {
     v?: AstValue;               // value
 }
 
+interface IAstTree extends IAstModel {
+    c?: IAstTree[];
+}
 
 interface IAstQuery {
     lang: string;
     word: string;
+    site?: string;
 }
 
 interface IAstProps {
@@ -30,3 +34,11 @@ interface IAstState {
 
 interface IEmptyState {}
 
+interface IAstCacheItem {
+    ast: IAstModel;
+    query: IAstQuery;
+}
+
+interface IAstCache {
+    [index:string]: IAstCacheItem;
+}
