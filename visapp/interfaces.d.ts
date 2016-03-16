@@ -23,13 +23,13 @@ interface IAstQuery {
 }
 
 interface IAstProps {
-    key? : string|number;
+    key?: string|number;
     query: IAstQuery;
-    model : IAstModel;
+    model: IAstModel;
 }
 
 interface IAstState {
-    showChildren? : boolean;
+    showChildren?: boolean;
 }
 
 interface IEmptyState {}
@@ -40,5 +40,17 @@ interface IAstCacheItem {
 }
 
 interface IAstCache {
-    [index:string]: IAstCacheItem;
+    [index: string]: IAstCacheItem;
+}
+
+
+interface ApplicationState {
+    currentPage: IAstQuery;
+    ast: IAstModel;
+    cache: IAstCache;
+}
+
+
+interface Window {
+    devToolsExtension(): any;
 }

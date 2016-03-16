@@ -2,31 +2,55 @@
  * Created by jasondent on 23/01/2016.
  */
 
-/// <reference path="../../typings/tsd.d.ts" />
-/// <reference path="./../interfaces.d.ts"/>
-
 import { Action, Actions } from '../actions/Actions';
+import wikiParser = require('../../lib/wiki-parser');
+import jQuery = require('jquery');
+import {PageRequest} from '../actions/Actions';
 
-interface State {
-    query: IAstQuery;
-    activeAst: IAstTree;
-    astCache: IAstCache;
-}
-
-const initialState : State = {
-    query: {
+const initialState: ApplicationState = {
+    currentPage: {
         lang: 'en',
-        word: 'hello',
+        word: 'walk',
         site: 'wiktionary.org'
     },
-    activeAst: null,
-    astCache: {}
+    ast: {t: 'root', v: 'root'},
+    cache: {}
 };
 
 
-export function visApp(state: State, action: Action): State {
+
+
+function currentPage(state: IAstQuery, action: Action): IAstQuery {
     if (state === undefined) {
-        state = initialState;
+        state = initialState.currentPage;
+    }
+    switch (action.type) {
+        case Actions.REQUEST_PAGE:
+        {
+            const payload = action.payload as PageRequest;
+            const { lang, page, site } = payload;
+            return { lang, site, word: page }
+        }
     }
     return state;
 }
+
+function ast(state: IAstModel, action: Action): IAstModel {
+    if (state === undefined) {
+        state = initialState.ast;
+    }
+    return state;
+}
+
+function cache(state: IAstCache, action: Action): IAstCache {
+    if (state === undefined) {
+        state = initialState.cache;
+    }
+    return state;
+}
+
+export const reducers = {
+    currentPage,
+    ast,
+    cache
+};

@@ -41,17 +41,11 @@
     "assertion-error/assertion-error.d.ts": {
       "commit": "1da639a106527e0c4010b354a1efe52a3059a291"
     },
-    "bluebird/bluebird.d.ts": {
-      "commit": "dc9dabe74a5be62613b17a3605309783a12ff28a"
-    },
-    "request-promise/request-promise.d.ts": {
-      "commit": "dc9dabe74a5be62613b17a3605309783a12ff28a"
-    },
     "jsonpath/jsonpath.d.ts": {
       "commit": "dc9dabe74a5be62613b17a3605309783a12ff28a"
     },
     "react/react.d.ts": {
-      "commit": "0bc09e91dd6f2d34b14af4367a138d34f437a5d4"
+      "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
     },
     "rx/rx.d.ts": {
       "commit": "70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e"
@@ -141,16 +135,28 @@
       "commit": "70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e"
     },
     "redux/redux.d.ts": {
-      "commit": "0bc09e91dd6f2d34b14af4367a138d34f437a5d4"
+      "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
     },
     "react-router/history.d.ts": {
-      "commit": "0bc09e91dd6f2d34b14af4367a138d34f437a5d4"
+      "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
     },
     "react-router/react-router.d.ts": {
-      "commit": "0bc09e91dd6f2d34b14af4367a138d34f437a5d4"
+      "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
     },
     "react-redux/react-redux.d.ts": {
       "commit": "0bc09e91dd6f2d34b14af4367a138d34f437a5d4"
+    },
+    "es6-promise/es6-promise.d.ts": {
+      "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
+    },
+    "whatwg-fetch/whatwg-fetch.d.ts": {
+      "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
+    },
+    "react-router-redux/react-router-redux.d.ts": {
+      "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
+    },
+    "redux-devtools/redux-devtools.d.ts": {
+      "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
     }
   }
 }

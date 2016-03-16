@@ -31,6 +31,7 @@ typings
 # Ignore generated files
 src/**/*.js
 src/**/*.map
+build
 
 visapp/**/*.js
 visapp/**/*.map

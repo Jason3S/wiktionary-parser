@@ -3,7 +3,8 @@
  */
 
 var _ = require('lodash');
-import request = require('request-promise');
+require('isomorphic-fetch');
+require('whatwg-fetch');
 
 export interface IWiktionaryPageRevision {
     contentformat: string; // ex: "text/x-wiki",
@@ -50,5 +51,5 @@ export function fetchWord(lang: string, word: string) {
             .map(function(value:string, key:string){ return encodeURIComponent(key) + '=' + encodeURIComponent(value); })
             .join('&');
 
-    return request(url);
+    return fetch(url);
 }

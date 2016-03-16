@@ -1,34 +1,27 @@
-/// <reference path="../../typings/tsd.d.ts" />
-/// <reference path="./../interfaces.d.ts"/>
 
 import React = require('react');
-import ReactDOM = require('react-dom');
-import * as _ from 'lodash';
-import jQuery = require('jquery');
 
 
 class TreeNode extends React.Component<IAstProps, IAstState> {
 
-    constructor(props : IAstProps){
+    constructor(props: IAstProps) {
         super(props);
-        const { model } = props;
         this.state = { showChildren: true };
     }
 
-
     public render() {
-        var props = this.props;
-        var model:IAstModel = props.model || {t:''};
-        var hasChildren = model.c && model.c.length;
-        var children = hasChildren && model.c
-            ? model.c.map((node: IAstModel, index: number)=>{ return (<TreeNode key={index} model={node} query={props.query} />);})
+        const props = this.props;
+        const model:IAstModel = props.model || {t: ''};
+        const hasChildren = model.c && model.c.length;
+        const children = hasChildren && model.c
+            ? model.c.map((node: IAstModel, index: number) => <TreeNode key={index} model={node} query={props.query} />)
             : null;
-        var nodeValue = model.v || '';
+        const nodeValue = model.v || '';
         if (hasChildren) {
             return (
                 <div className="treeNode" >
-                    <label><input type="checkbox" onChange={()=>{this.toggleShowChildren();}}/> {model.t}</label>
-                    <div className={this.state.showChildren ? 'show':'hidden'} >
+                    <label><input type="checkbox" onChange={() => {this.toggleShowChildren();}}/> {model.t}</label>
+                    <div className={this.state.showChildren ? 'show' : 'hidden'} >
                         {children}
                     </div>
                 </div>

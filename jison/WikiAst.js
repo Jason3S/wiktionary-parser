@@ -1,6 +1,7 @@
 /**
  * Created by jasondent on 09/01/2016.
  */
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -18,7 +19,7 @@ var WikiAst;
             return fn.apply(new AstEvalContext(node, info), values);
         };
         return AstEvalContext;
-    })();
+    }());
     var GenericNode = (function () {
         function GenericNode(children, type, fn, limit) {
             if (limit === void 0) { limit = 0; }
@@ -35,7 +36,7 @@ var WikiAst;
             return this.type;
         };
         return GenericNode;
-    })();
+    }());
     WikiAst.GenericNode = GenericNode;
     var GenericLeaf = (function () {
         function GenericLeaf(type, value, fn) {
@@ -51,7 +52,7 @@ var WikiAst;
             return this.type;
         };
         return GenericLeaf;
-    })();
+    }());
     WikiAst.GenericLeaf = GenericLeaf;
     var TransclusionNode = (function () {
         function TransclusionNode(children, type) {
@@ -76,7 +77,7 @@ var WikiAst;
             return this.type;
         };
         return TransclusionNode;
-    })();
+    }());
     WikiAst.TransclusionNode = TransclusionNode;
     var PageParamContext = (function (_super) {
         __extends(PageParamContext, _super);
@@ -119,7 +120,7 @@ var WikiAst;
             return p;
         };
         return PageParamContext;
-    })(AstEvalContext);
+    }(AstEvalContext));
     WikiAst.fnMap = {
         "+": { fn: function (a, b) { return Number(a) + Number(b); }, limit: 2 },
         "-": { fn: function (a, b) { return Number(a) - Number(b); }, limit: 2 },

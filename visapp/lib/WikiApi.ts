@@ -2,15 +2,35 @@
  * Created by jasondent on 24/01/2016.
  */
 
-import Rx = require('rx')
-import _ = require('lodash');
-import { IWiktionaryQueryResult } from "../../lib/wiktionary/wiktionary-reader";
-import jQuery = require('jquery');
+import * as Rx from 'rx';
+import * as _ from 'lodash';
+import { IWiktionaryQueryResult } from '../../lib/wiktionary/wiktionary-reader';
+import isNode = require('detect-node');
+import * as fetch from 'isomorphic-fetch';
 
-export function fetchWikiMarkup(lang: string, page: string, site: string = 'wiktionary.org' ) : Rx.Observable<string>  {
-    var subject = new Rx.Subject<string>();
+const defaultWikiSite = 'wiktionary.org';
 
-    var params:Dictionary<string> = {
+function fetchUrl<T>(url): Promise<T> {
+    if (isNode) {
+        return fetch(url).then(response => response.json());
+    }
+
+    const jQuery = require('jquery');
+
+    // Use Jquery.
+    const request = {
+        url: url,
+        dataType: 'jsonp',
+        crossDomain: true
+    };
+
+    return new Promise((resolve, reject) => {
+        jQuery.ajax(request).then(resolve, reject);
+    });
+}
+
+export function fetchWikiMarkup(lang: string, page: string, site: string = defaultWikiSite ): Rx.Observable<string>  {
+    const params: Dictionary<string> = {
         action : 'query',
         prop :   'revisions|info',
         rvprop : 'content',
@@ -18,32 +38,19 @@ export function fetchWikiMarkup(lang: string, page: string, site: string = 'wikt
         titles : page
     };
 
-    var uri = 'https://' + lang + '.' + site + '/w/api.php?';
+    const uri = 'https://' + lang + '.' + site + '/w/api.php?';
 
-    var url = uri + _
-            .map(params,function(value:string, key:string){ return encodeURIComponent(key) + '=' + encodeURIComponent(value); })
+    const url = uri + _
+            .map(params, (value: string, key: string) => encodeURIComponent(key) + '=' + encodeURIComponent(value))
             .join('&');
 
-    var request = {
-        url: url,
-        dataType: 'jsonp',
-        crossDomain: true
-    };
-
-    jQuery.ajax(request).then((result: IWiktionaryQueryResult)=>{
-        const pages = _(result.query.pages)
-            .filter((p)=>{ return p.title == page && p.pagelanguage==lang;})
-            .map((p:any)=>{ return p.revisions; })
-            .filter((p)=>{ return p; })
-            .map((p:any)=>{ return p[0]; })
-            .filter((p)=>{ return p; })
-            .map((p:any)=>{ return p['*'];})
-            .filter((p)=>{ return p; })
-            .value() || [];
-        const markup = pages[0] || '';
-        subject.onNext(markup);
-        subject.onCompleted();
-    });
-
-    return subject;
+    return Rx.Observable.fromPromise(fetchUrl(url))
+        .flatMap((result: IWiktionaryQueryResult) => Rx.Observable.pairs(result.query.pages))
+        .map(kvp => kvp[1])
+        .filter(p => p.title === page && p.pagelanguage === lang)
+        .flatMap(p => p.revisions)
+        .map(p => p['*'])
+        .first()
+        .share()
+        ;
 }

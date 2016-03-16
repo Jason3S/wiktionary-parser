@@ -1,13 +1,14 @@
-/// <reference path="../../typings/tsd.d.ts" />
-/// <reference path="./../interfaces.d.ts"/>
 
 import React = require('react');
 import ReactDOM = require('react-dom');
 import * as _ from 'lodash';
-import jQuery = require('jquery');
 import ReactElement = __React.ReactElement;
 import { Link } from 'react-router';
 import {assign} from "rxjs/util/assign";
+require('isomorphic-fetch');
+require('whatwg-fetch');
+
+// const assign = _.assign;
 
 interface IAstViewProps extends IAstProps {}
 
