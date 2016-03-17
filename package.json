@@ -1,11 +1,25 @@
 {
-  "name": "wiktionary-parser",
-  "version": "1.0.0",
-  "description": "Using Javascript to parse Wiktionary Files -- A work in progress",
-  "main": "main.js",
-  "scripts": {
-    "tslint": "find . \\( -path './visapp*.ts*' -or -path './test*.ts*' \\) -exec ./node_modules/.bin/tslint {} \\;",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "name": "wiktionary-parser",
+    "version": "1.0.0",
+    "description": "Using Javascript to parse Wiktionary Files -- A work in progress",
+    "main": "main.js",
+    "scripts": {
+    "mocha": "./node_modules/.bin/mocha",
+    "istanbul": "./node_modules/.bin/istanbul",
+    "test": "npm run mocha -- --recursive build/test",
+    "test:debug": "npm run mocha -- --recursive --debug-brk build/test",
+    "test:w": "npm run mocha -- -w --recursive build/test",
+    "coverage": "npm run istanbul cover ./node_modules/.bin/_mocha -- -- --recursive build/test",
+    "tsc": "./node_modules/.bin/tsc",
+    "tsc:w": "./node_modules/.bin/tsc -w",
+    "webpack": "./node_modules/.bin/webpack",
+    "webpack-dev-server": "./node_modules/.bin/webpack-dev-server --port 8088",
+    "build": "npm run tsc; npm run webpack",
+    "start": "concurrent 'npm run tsc:w' 'npm run webpack-dev-server'",
+    "deploy": "npm run tsc; npm run webpack",
+    "typings": "./node_modules/.bin/typings install",
+    "postinstall": "npm run typings",
+    "tslint": "find . \\( -path './visapp*.ts*' -or -path './test*.ts*' \\) -exec ./node_modules/.bin/tslint {} \\;"
   },
   "repository": {
     "type": "git",
@@ -57,10 +71,15 @@
   "devDependencies": {
     "JSONSelect": "^0.4.0",
     "chai": "^3.4.1",
+    "enzyme": "^2.1.0",
     "html-webpack-plugin": "^1.7.0",
+    "istanbul": "^0.4.2",
     "mocha": "^2.3.4",
+    "react-addons-test-utils": "^0.14.7",
+    "source-map-loader": "^0.1.5",
     "tslint": "^3.6.0",
     "typescript": "^1.8.7",
-    "webpack": "^1.12.11"
+    "webpack": "^1.12.11",
+    "webpack-dev-server": "^1.14.1"
   }
 }
