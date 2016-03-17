@@ -20,7 +20,7 @@ const initialState: ApplicationState = {
 
 
 
-function currentPage(state: IAstQuery, action: Action): IAstQuery {
+function currentPage(state: AstQuery, action: Action): AstQuery {
     if (state === undefined) {
         state = initialState.currentPage;
     }
@@ -35,14 +35,14 @@ function currentPage(state: IAstQuery, action: Action): IAstQuery {
     return state;
 }
 
-function ast(state: IAstModel, action: Action): IAstModel {
+function ast(state: AstModel, action: Action): AstModel {
     if (state === undefined) {
         state = initialState.ast;
     }
     return state;
 }
 
-function cache(state: IAstCache, action: Action): IAstCache {
+function cache(state: AstCache, action: Action): AstCache {
     if (state === undefined) {
         state = initialState.cache;
     }

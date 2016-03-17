@@ -2,19 +2,19 @@
 import React = require('react');
 
 
-class TreeNode extends React.Component<IAstProps, IAstState> {
+class TreeNode extends React.Component<AstProps, AstState> {
 
-    constructor(props: IAstProps) {
+    constructor(props: AstProps) {
         super(props);
         this.state = { showChildren: true };
     }
 
     public render() {
         const props = this.props;
-        const model:IAstModel = props.model || {t: ''};
+        const model:AstModel = props.model || {t: ''};
         const hasChildren = model.c && model.c.length;
         const children = hasChildren && model.c
-            ? model.c.map((node: IAstModel, index: number) => <TreeNode key={index} model={node} query={props.query} />)
+            ? model.c.map((node: AstModel, index: number) => <TreeNode key={index} model={node} query={props.query} />)
             : null;
         const nodeValue = model.v || '';
         if (hasChildren) {

@@ -29,7 +29,7 @@ export function requestPage(payload: PageRequest) : Action {
 }
 
 
-export interface  RequestPageReady extends PayLoad { lang: string, page: string, site: string, ast: IAstModel }
+export interface  RequestPageReady extends PayLoad { lang: string, page: string, site: string, ast: AstModel }
 export function requestPageReady(payload: RequestPageReady) : Action {
     return { type: Actions.REQUEST_PAGE_READY, payload };
 }

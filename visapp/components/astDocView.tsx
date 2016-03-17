@@ -10,7 +10,7 @@ require('whatwg-fetch');
 
 // const assign = _.assign;
 
-interface IAstViewProps extends IAstProps {}
+interface IAstViewProps extends AstProps {}
 
 type NodeViewConstructor = new(...params:any[])=>BaseNodeView;
 var mapTypeToViewNodes:Dictionary<NodeViewConstructor> = {};
@@ -22,15 +22,15 @@ function registerMap(conFn: NodeViewConstructor, relevantTypes:string[]) {
 
 interface ModelProperties extends IAstViewProps {
     value: AstValue,
-    children: IAstModel[]
+    children: AstModel[]
 }
 
 
-class BaseNodeView extends React.Component<IAstViewProps, IEmptyState> {
+class BaseNodeView extends React.Component<IAstViewProps, EmptyState> {
 
-    public renderChildren(children : IAstModel[]) : React.ReactElement<IAstViewProps>|React.ReactElement<IAstViewProps>[] {
+    public renderChildren(children : AstModel[]) : React.ReactElement<IAstViewProps>|React.ReactElement<IAstViewProps>[] {
         if (children.length) {
-            return (children.map((model:IAstModel, key:number)=>{ return this.renderChild(key, model); }));
+            return (children.map((model:AstModel, key:number)=>{ return this.renderChild(key, model); }));
         }
         return (<span key={0}>{"{{empty}}"}</span>);
     }
@@ -64,7 +64,7 @@ class BaseNodeView extends React.Component<IAstViewProps, IEmptyState> {
         return this.renderModel(p);
     }
 
-    protected renderChild(key: string|number, model:IAstModel) {
+    protected renderChild(key: string|number, model:AstModel) {
         key = key || 0;
         const { query } = this.props;
         if (model) {
@@ -227,7 +227,7 @@ class RenderLink extends BaseNodeView {
 
     public renderModel(p:ModelProperties) {
         const {key, model, children} = p;
-        const params = children.map((n:IAstModel)=>{ return n.v; });
+        const params = children.map((n:AstModel)=>{ return n.v; });
         if ([1,2].indexOf(params.length) >= 0 && (params[0] + '').match(/^(\w| |[-])+$/)) {
             const { query } = this.props;
             const param = params[0];
@@ -235,7 +235,7 @@ class RenderLink extends BaseNodeView {
             return (<span key={key} className={'ast-'+model.t}><Link to={`/${query.lang}/${param}`}>{this.renderChildren([textNode])}</Link></span>);
         }
 
-        const spacer: IAstModel = {t:'plain-text',v:'|'};
+        const spacer: AstModel = {t:'plain-text',v:'|'};
         const spacers = _.fill(new Array(children.length), spacer);
         const c = _.flatten(_.zip(children, spacers)).slice(0, -1);
 
@@ -244,7 +244,7 @@ class RenderLink extends BaseNodeView {
 }
 
 
-class AstDocView extends React.Component<IAstProps, IEmptyState> {
+class AstDocView extends React.Component<AstProps, EmptyState> {
 
     public render() {
         const { props } = this;

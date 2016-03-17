@@ -18,8 +18,8 @@ import createStore = Redux.createStore;
 import compose = Redux.compose;
 
 
-interface IAstAppProps {
-    params?: IAstQuery;
+interface AstAppProps {
+    params?: AstQuery;
     location: {
         query: {
             lang?: string;
@@ -95,7 +95,7 @@ const store = createStoreWithMiddleware(reducer);
 // Required for replaying actions from devtools to work
 reduxRouterMiddleware.listenForReplays(store);
 
-class AppPageRequest extends React.Component<IAstAppProps, {}> {
+class AppPageRequest extends React.Component<AstAppProps, {}> {
     render() {
         const { lang, page, site } = this.props.location.query;
         return (<div>

@@ -6,48 +6,48 @@
 
 declare type AstValue = string|number|boolean;
 
-interface IAstModel {
+interface AstModel {
     t: string;                  // type
-    c?: IAstModel[];            // children
+    c?: AstModel[];            // children
     v?: AstValue;               // value
 }
 
-interface IAstTree extends IAstModel {
-    c?: IAstTree[];
+interface AstTree extends AstModel {
+    c?: AstTree[];
 }
 
-interface IAstQuery {
+interface AstQuery {
     lang: string;
     word: string;
     site?: string;
 }
 
-interface IAstProps {
+interface AstProps {
     key?: string|number;
-    query: IAstQuery;
-    model: IAstModel;
+    query: AstQuery;
+    model: AstModel;
 }
 
-interface IAstState {
+interface AstState {
     showChildren?: boolean;
 }
 
-interface IEmptyState {}
+interface EmptyState {}
 
-interface IAstCacheItem {
-    ast: IAstModel;
-    query: IAstQuery;
+interface AstCacheItem {
+    ast: AstModel;
+    query: AstQuery;
 }
 
-interface IAstCache {
-    [index: string]: IAstCacheItem;
+interface AstCache {
+    [index: string]: AstCacheItem;
 }
 
 
 interface ApplicationState {
-    currentPage: IAstQuery;
-    ast: IAstModel;
-    cache: IAstCache;
+    currentPage: AstQuery;
+    ast: AstModel;
+    cache: AstCache;
 }
 
 
