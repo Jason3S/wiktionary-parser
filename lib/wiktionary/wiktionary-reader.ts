@@ -2,14 +2,14 @@
  * Created by jasondent on 23/12/2015.
  */
 
-var _ = require('lodash');
+import * as _ from 'lodash';
 require('isomorphic-fetch');
 require('whatwg-fetch');
 
 export interface IWiktionaryPageRevision {
     contentformat: string; // ex: "text/x-wiki",
     contentmodel: string;  // ex: "wikitext",
-    "*": string; // "==English==\n{{wikipedia|walk}}"
+    '*': string; // "==English==\n{{wikipedia|walk}}"
 }
 
 export interface IWiktionaryPage {
@@ -32,12 +32,12 @@ export interface IWiktionaryQuery {
 
 export interface IWiktionaryQueryResult {
     batchcomplete: string;
-    query : IWiktionaryQuery;
+    query: IWiktionaryQuery;
 }
 
 export function fetchWord(lang: string, word: string) {
 
-    var params = {
+    const params = {
         'action' : 'query',
         'prop' :   'revisions|info',
         'rvprop' : 'content',
@@ -45,10 +45,10 @@ export function fetchWord(lang: string, word: string) {
         'titles' : word
     };
 
-    var uri = 'http://' + lang + '.wiktionary.org/w/api.php?';
+    const uri = 'http://' + lang + '.wiktionary.org/w/api.php?';
 
-    var url = uri + _(params)
-            .map(function(value:string, key:string){ return encodeURIComponent(key) + '=' + encodeURIComponent(value); })
+    const url = uri + _(params)
+            .map((value: string, key: string) => encodeURIComponent(key) + '=' + encodeURIComponent(value))
             .join('&');
 
     return fetch(url);
