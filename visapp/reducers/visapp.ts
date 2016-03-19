@@ -2,9 +2,8 @@
  * Created by jasondent on 23/01/2016.
  */
 
+import * as Redux from 'redux';
 import { Action, Actions } from '../actions/Actions';
-import wikiParser = require('../../lib/wiki-parser');
-import jQuery = require('jquery');
 import {PageRequest} from '../actions/Actions';
 
 const initialState: ApplicationState = {
@@ -24,6 +23,7 @@ function currentPage(state: AstQuery, action: Action): AstQuery {
     if (state === undefined) {
         state = initialState.currentPage;
     }
+    console.log(action);
     switch (action.type) {
         case Actions.REQUEST_PAGE:
         {

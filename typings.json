@@ -8,7 +8,6 @@
     "es6-promise": "github:DefinitelyTyped/DefinitelyTyped/es6-promise/es6-promise.d.ts#5d0f2126c8dac8fce0ff020218aea06607213b0d",
     "express": "github:DefinitelyTyped/DefinitelyTyped/express/express.d.ts#5e960679e6f9ae6ce905b1db0ad36fc189cd2eca",
     "form-data": "github:DefinitelyTyped/DefinitelyTyped/form-data/form-data.d.ts#dc9dabe74a5be62613b17a3605309783a12ff28a",
-    "history": "github:DefinitelyTyped/DefinitelyTyped/react-router/history.d.ts#5d0f2126c8dac8fce0ff020218aea06607213b0d",
     "jquery": "github:DefinitelyTyped/DefinitelyTyped/jquery/jquery.d.ts#70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e",
     "jsonpath": "github:DefinitelyTyped/DefinitelyTyped/jsonpath/jsonpath.d.ts#dc9dabe74a5be62613b17a3605309783a12ff28a",
     "lodash": "github:DefinitelyTyped/DefinitelyTyped/lodash/lodash.d.ts#5e960679e6f9ae6ce905b1db0ad36fc189cd2eca",
@@ -28,15 +27,20 @@
     "react-dom": "github:DefinitelyTyped/DefinitelyTyped/react/react-dom.d.ts#70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e",
     "react-global": "github:DefinitelyTyped/DefinitelyTyped/react/react-global.d.ts#70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e",
     "react-redux": "github:DefinitelyTyped/DefinitelyTyped/react-redux/react-redux.d.ts#0bc09e91dd6f2d34b14af4367a138d34f437a5d4",
-    "react-router": "github:DefinitelyTyped/DefinitelyTyped/react-router/react-router.d.ts#5d0f2126c8dac8fce0ff020218aea06607213b0d",
-    "react-router-redux": "github:DefinitelyTyped/DefinitelyTyped/react-router-redux/react-router-redux.d.ts#5d0f2126c8dac8fce0ff020218aea06607213b0d",
-    "redux": "github:DefinitelyTyped/DefinitelyTyped/redux/redux.d.ts#5d0f2126c8dac8fce0ff020218aea06607213b0d",
-    "redux-devtools": "github:DefinitelyTyped/DefinitelyTyped/redux-devtools/redux-devtools.d.ts#5d0f2126c8dac8fce0ff020218aea06607213b0d",
+    "react-router": "registry:dt/react-router#2.0.0+20160316155526",
+    "react-router-redux": "registry:dt/react-router-redux#4.0.0+20160316155526",
+    "react-router/history": "registry:dt/react-router/history#2.0.0+20160316155526",
+    "redux": "registry:dt/redux#1.0.0+20160317120654",
+    "redux-devtools": "registry:dt/redux-devtools#3.0.0+20151215130854",
+    "redux-devtools-dock-monitor": "registry:dt/redux-devtools-dock-monitor#1.0.1+20151216103641",
+    "redux-devtools-log-monitor": "registry:dt/redux-devtools-log-monitor#1.0.1+20151216103641",
+    "redux-thunk": "registry:dt/redux-thunk#2.0.1+20160317120654",
     "request": "github:DefinitelyTyped/DefinitelyTyped/request/request.d.ts#dc9dabe74a5be62613b17a3605309783a12ff28a",
     "serve-static": "github:DefinitelyTyped/DefinitelyTyped/serve-static/serve-static.d.ts#5e960679e6f9ae6ce905b1db0ad36fc189cd2eca",
-    "whatwg-fetch": "github:DefinitelyTyped/DefinitelyTyped/whatwg-fetch/whatwg-fetch.d.ts#5d0f2126c8dac8fce0ff020218aea06607213b0d"
+    "whatwg-fetch": "registry:dt/whatwg-fetch#0.0.0+20160316155526"
   },
   "ambientDevDependencies": {
     "enzyme": "registry:dt/enzyme#1.2.0+20151218140740"
-  }
+  },
+  "dependencies": {}
 }

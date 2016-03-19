@@ -4,14 +4,11 @@
 
 // Actions needed to be added in two places:
 // 1 as a constant and 2 in the Actions.
-const REQUEST_PAGE = 'REQUEST_PAGE';
-const APPLY_AST = 'APPLY_AST';
-const REQUEST_PAGE_READY = 'REQUEST_PAGE_READY';
 
 export const Actions = {
-    REQUEST_PAGE,
-    REQUEST_PAGE_READY,
-    APPLY_AST
+    REQUEST_PAGE: 'REQUEST_PAGE',
+    APPLY_AST: 'APPLY_AST',
+    REQUEST_PAGE_READY: 'REQUEST_PAGE_READY'
 };
 
 

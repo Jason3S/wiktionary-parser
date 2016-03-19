@@ -32,6 +32,7 @@ typings
 src/**/*.js
 src/**/*.map
 build
+visapp_bundle.js
 
 visapp/**/*.js
 visapp/**/*.map
