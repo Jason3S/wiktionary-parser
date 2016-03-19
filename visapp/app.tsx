@@ -110,8 +110,13 @@ const DevTools = createDevTools(
 );
 
 const store = createStore(
-  reducer,
-  DevTools.instrument()
+    reducer,
+    Redux.compose(
+        Redux.applyMiddleware(
+            thunkMiddleware
+        ),
+        DevTools.instrument()
+    )
 );
 
 const history = syncHistoryWithStore(browserHistory, store);
@@ -130,6 +135,12 @@ function AppContent(props: any) {
         </div>
     );
 }
+
+function bindRequests() {
+    return (dispatch) => null;
+}
+
+store.dispatch(bindRequests());
 
 ReactDOM.render(
   <Provider store={store}>
