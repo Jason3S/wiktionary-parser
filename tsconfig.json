@@ -18,6 +18,7 @@
     "typings/main",
     "typings/main.d.ts",
     "WikiMarkup",
+    "visapp_bundle.js",
     "build"
   ]
 }

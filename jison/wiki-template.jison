@@ -308,10 +308,8 @@ text-string
 %%
 
 var _ = require('lodash');
-var wikiAst = require('./WikiAst').wikiAst;
 
 var CONTENT = 'content';
-var x = wikiAst;
 
 function leaf(v) {
     v = (typeof v === "undefined") ? null : v;

@@ -15,6 +15,7 @@
     "mocha": "github:DefinitelyTyped/DefinitelyTyped/mocha/mocha.d.ts#1da639a106527e0c4010b354a1efe52a3059a291",
     "mongodb": "github:DefinitelyTyped/DefinitelyTyped/mongodb/mongodb.d.ts#5e960679e6f9ae6ce905b1db0ad36fc189cd2eca",
     "node": "github:DefinitelyTyped/DefinitelyTyped/node/node.d.ts#dc9dabe74a5be62613b17a3605309783a12ff28a",
+    "prettyjson": "registry:dt/prettyjson#0.0.0+20160127212256",
     "react": "github:DefinitelyTyped/DefinitelyTyped/react/react.d.ts#5d0f2126c8dac8fce0ff020218aea06607213b0d",
     "react-addons-create-fragment": "github:DefinitelyTyped/DefinitelyTyped/react/react-addons-create-fragment.d.ts#70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e",
     "react-addons-css-transition-group": "github:DefinitelyTyped/DefinitelyTyped/react/react-addons-css-transition-group.d.ts#70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e",
