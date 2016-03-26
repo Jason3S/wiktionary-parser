@@ -9,6 +9,7 @@
     "express": "github:DefinitelyTyped/DefinitelyTyped/express/express.d.ts#5e960679e6f9ae6ce905b1db0ad36fc189cd2eca",
     "form-data": "github:DefinitelyTyped/DefinitelyTyped/form-data/form-data.d.ts#dc9dabe74a5be62613b17a3605309783a12ff28a",
     "jquery": "github:DefinitelyTyped/DefinitelyTyped/jquery/jquery.d.ts#70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e",
+    "js-beautify": "registry:dt/js-beautify#0.0.0+20160316155526",
     "jsonpath": "github:DefinitelyTyped/DefinitelyTyped/jsonpath/jsonpath.d.ts#dc9dabe74a5be62613b17a3605309783a12ff28a",
     "lodash": "github:DefinitelyTyped/DefinitelyTyped/lodash/lodash.d.ts#5e960679e6f9ae6ce905b1db0ad36fc189cd2eca",
     "mime": "github:DefinitelyTyped/DefinitelyTyped/mime/mime.d.ts#5e960679e6f9ae6ce905b1db0ad36fc189cd2eca",
@@ -41,7 +42,8 @@
     "whatwg-fetch": "registry:dt/whatwg-fetch#0.0.0+20160316155526"
   },
   "ambientDevDependencies": {
-    "enzyme": "registry:dt/enzyme#1.2.0+20151218140740"
+    "enzyme": "registry:dt/enzyme#1.2.0+20151218140740",
+    "js-beautify": "registry:dt/js-beautify#0.0.0+20160316155526"
   },
   "dependencies": {}
 }

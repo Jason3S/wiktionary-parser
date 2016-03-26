@@ -19,7 +19,8 @@
     "deploy": "npm run tsc; npm run webpack",
     "typings": "./node_modules/.bin/typings install",
     "postinstall": "npm run typings",
-    "tslint": "find . \\( -path './visapp*.ts*' -or -path './test*.ts*' \\) -exec ./node_modules/.bin/tslint {} \\;"
+    "tslint": "find . \\( -path './visapp*.ts*' -or -path './test*.ts*' \\) -exec ./node_modules/.bin/tslint {} \\;",
+    "build:jison": "tsc; cd ./jison; node ../build/jison/mygenerator.js"
   },
   "repository": {
     "type": "git",
@@ -44,7 +45,7 @@
     "install": "^0.4.1",
     "isomorphic-fetch": "^2.2.1",
     "jQuery": "^1.7.4",
-    "jison": "^0.4.16",
+    "jison": "^0.4.17",
     "jquery": "^2.2.1",
     "jsdom": "^8.1.0",
     "jsonpath": "^0.2.2",
@@ -79,6 +80,7 @@
     "enzyme": "^2.1.0",
     "html-webpack-plugin": "^1.7.0",
     "istanbul": "^0.4.2",
+    "js-beautify": "^1.6.2",
     "mocha": "^2.3.4",
     "react-addons-test-utils": "^0.14.7",
     "source-map-loader": "^0.1.5",
