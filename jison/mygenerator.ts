@@ -8,8 +8,10 @@ import {Parser, ParserOptions} from 'jison';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as jsbeautifier from 'js-beautify';
+import * as _ from 'lodash';
 
-const filenames = ['./wiktionary.jison', './wiki-template.jison'];
+const targetDir = process.argv[2];
+const filenames = _(process.argv).drop(3).value();
 
 filenames.forEach((filename) => {
     const source = fs.readFileSync(path.normalize(filename), 'utf8');
@@ -21,7 +23,7 @@ filenames.forEach((filename) => {
     // generate source, ready to be written to disk
     const parserSource = parser.generate(options);
 
-    const outFileName = path.basename(filename, '.jison') + '.js';
+    const outFileName = (targetDir + '/' + path.basename(filename, '.jison') + '.js').replace('//', '/');
 
     fs.writeFileSync(outFileName, jsbeautifier(parserSource));
 });

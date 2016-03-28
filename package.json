@@ -20,7 +20,7 @@
     "typings": "./node_modules/.bin/typings install",
     "postinstall": "npm run typings",
     "tslint": "find . \\( -path './visapp*.ts*' -or -path './test*.ts*' \\) -exec ./node_modules/.bin/tslint {} \\;",
-    "build:jison": "tsc; cd ./jison; node ../build/jison/mygenerator.js"
+    "build:jison": "node ./build/jison/mygenerator.js ./build/jison ./jison/wiki-template.jison ./jison/wiktionary.jison"
   },
   "repository": {
     "type": "git",

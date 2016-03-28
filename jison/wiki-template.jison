@@ -7,6 +7,27 @@
 
 %{
     // First Block of code.
+
+    var leaf = thunk('leaf');
+    var missingParam = thunk('missingParam');
+    var node = thunk('node');
+    var addChild = thunk('addChild');
+    var append = thunk('append');
+    var content = thunk('content');
+    var trimParam = thunk('trimParam');
+
+    function thunk(name) {
+        var fn;
+        return function() {
+            if (!fn) {
+                var jisonHelper = require('./jisonHelper');
+                fn = jisonHelper[name];
+            }
+            return fn.apply(this, arguments);
+        };
+    }
+
+    parser.processWikiTemplate = thunk('processWikiTemplate');
 %}
 
 /* lexical grammar */
@@ -110,7 +131,6 @@
         }
 
         setupTokenMap();
-        // parser.processWikiTemplate = processWikiTemplate;
     }());
 
     /* End Lexer Customization Methods */
@@ -307,247 +327,5 @@ text-string
 
 %%
 
-var _ = require('lodash');
-
-var CONTENT = 'content';
-
-function leaf(v) {
-    v = (typeof v === "undefined") ? null : v;
-    return { v: v };
-}
-
-function missingParam() {
-    return { v: undefined };
-}
-
-function node(t, c) {
-    return { t: t, c: c };
-}
-
-function addChild(node, c) {
-    node.c.push(c);
-    return node;
-}
-
-function append(a, b) {
-    a.c.concat([b]);
-    return a;
-}
-
-function content(a, b) {
-    if (! b) {
-        if (a.t === CONTENT) {
-            return a;
-        }
-        return node(CONTENT, [a]);
-    }
-    if (a.t === CONTENT) {
-        if (b.t === CONTENT) {
-            a.c.concat(b.c);
-        } else {
-            a.c.concat([b]);
-        }
-        return a;
-    } else if (b.t === CONTENT) {
-        return node(CONTENT, [a].concat(b.c));
-    }
-
-    return node(CONTENT, [a,b]);
-}
-
-
-function trimParamLeft(ast) {
-    "use strict";
-
-    var c, len, i;
-
-    if (ast == null) {
-        return ast;
-    }
-
-    if (typeof ast.v === "string") {
-        ast.v = ast.v.trimLeft();
-
-        if (ast.v === '') {
-            return null;
-        }
-
-        return ast;
-    }
-
-    c = ast.c;
-    if (! c || ! c.length) {
-        return null;
-    }
-
-    if (ast.t !== CONTENT) {
-        return ast;
-    }
-
-    len = c.length;
-
-    for(i = 0; i < len; ++i) {
-        c[i] = trimParamLeft(c[i]);
-        if (c[i] !== null) break;
-    }
-
-    if (i >= len) {
-        return null;
-    }
-
-    ast.c = c.slice(i);
-
-    if (ast.c.length == 1) {
-        return ast.c[0];
-    }
-
-    return ast;
-}
-
-
-function trimParamRight(ast) {
-    "use strict";
-
-    var c, len, i;
-
-    if (ast == null) {
-        return ast;
-    }
-
-    if (typeof ast.v === "string") {
-        ast.v = ast.v.trimRight();
-
-        if (ast.v === '') {
-            return null;
-        }
-
-        return ast;
-    }
-
-    c = ast.c;
-    if (! c || ! c.length) {
-        return null;
-    }
-
-    if (ast.t !== CONTENT) {
-        return ast;
-    }
-
-    len = c.length;
-
-    for(i = len-1; i >= 0; --i) {
-        c[i] = trimParamRight(c[i]);
-        if (c[i] !== null) break;
-    }
-
-    if (i < 0) {
-        return null;
-    }
-
-    ast.c = c.slice(0, i+1);
-
-    if (ast.c.length == 1) {
-        return ast.c[0];
-    }
-
-    return ast;
-}
-
-function trimParam(ast) {
-    ast = trimParamRight(trimParamLeft(ast));
-    if (ast == null) {
-        return leaf(null);
-    }
-    return ast;
-}
-
-function processWikiTemplate(page, params, ast, transclusion) {
-    "use strict";
-
-    var INCLUDE_MODE = 'include';
-
-    transclusion = transclusion || INCLUDE_MODE;
-    var isIncludeOnly = transclusion === INCLUDE_MODE;
-    var isNoInclude = transclusion !== INCLUDE_MODE;
-    var pageParams = normalizeParams(params);
-    var pageName = normalizePageName(page);
-
-    var functions = {
-        pageParam: getPageParam,
-        "+":  function(a, b){ return a + b; },
-        "-":  function(a, b){ return a - b; },
-        "*":  function(a, b){ return a * b; },
-        "/":  function(a, b){ return a / b; },
-        "||": function(a, b){ return a || b; },
-        "&&": function(a, b){ return a && b; },
-        "if": function(a, b, c) { return a ? b : c; },
-        "ifeq": function(a, b, c, d) { return (a == b) ? c : d; },
-        pow: Math.pow,
-        includeonly: function(content) { return isIncludeOnly ? content : ''; },
-        noinclude: function(content) { return isNoInclude ? content : ''; },
-        "content": function() { return arguments.length == 1 ? arguments[0] : Array.from(arguments).join(''); }
-    };
-
-    function processAst(ast) {
-        var i;
-        var v = ast.v;
-        var c = ast.c;
-        var p = [];
-        if (v !== undefined || c === undefined) {
-            return v;
-        }
-
-        for (i = 0; i < c.length; i += 1) {
-            p[i] = processAst(c[i]);
-        }
-        var fn = functions[ast.t];
-        if (fn === undefined) {
-            console.log("Unknown function: '"+ast.t+"'");
-            return undefined;
-        }
-        return fn.apply(this, p);
-    }
-
-    function normalizeParams(pageParams) {
-        var params = [undefined];
-        var namedParamRegEx = /^([a-zA-Z0-9]+)[=](.*)$/;
-        for (var i in pageParams) {
-            if (pageParams.hasOwnProperty(i)) {
-                var p = '' + pageParams[i];
-                var m = p.match(namedParamRegEx);
-                if (m) {
-                    params[m[1]] = m[2];
-                } else {
-                    params.push(p);
-                }
-            }
-        }
-
-        return params;
-    }
-
-    function normalizePageName(pageName) {
-        return pageName.replace(/^[^:]+[:]/, '');
-    }
-
-    function getPageParam(name, alternate) {
-        name = ('' + name).trim();
-
-        if (alternate === null) {
-            alternate = pageName;
-        }
-        if (alternate === undefined) {
-            alternate = '{{{'+name+'}}}';
-        }
-        var p = pageParams[name];
-        if (p === undefined) {
-            return alternate;
-        }
-        return p;
-    }
-
-    return processAst(ast);
-}
-
-parser.processWikiTemplate = processWikiTemplate;
+// More code
 

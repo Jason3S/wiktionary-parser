@@ -172,7 +172,8 @@ const nodeMap = {
 export function node(type: string, children: IWikiAstTree[]) {
     const fn = nodeMap[type];
     if (! fn) {
-        throw new Error('Unknown Type: ' + type);
+        return null;
+        // throw new Error('Unknown Type: ' + type);
     }
     return fn(children);
 }

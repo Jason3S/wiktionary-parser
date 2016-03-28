@@ -167,13 +167,13 @@ type TemplateSample = [string, [string, string, any[]], RegExp[]];
 
 export function getTemplateSamples(): TemplateSample[] {
     return [
-        ['noinclude', ['=<noinclude>\n{{documentation}}\n\n</noinclude>', 'Page1', []], [/^[=]$/] ],
-        ['noinclude', ['<includeonly>=</includeonly>', 'Page1', []], [/^[=]$/] ],
-        ['noinclude', ['<includeonly>=</includeonly><noinclude>{{documentation}}</noinclude>', 'Page1', []], [/^[=]$/] ],
+        ['noinclude1', ['=<noinclude>\n{{documentation}}\n\n</noinclude>', 'Page1', []], [/^[=]$/] ],
+        ['noinclude2', ['<includeonly>=</includeonly>', 'Page1', []], [/^[=]$/] ],
+        ['noinclude3', ['<includeonly>=</includeonly><noinclude>{{documentation}}</noinclude>', 'Page1', []], [/^[=]$/] ],
         ['#if {{{1}}}', ['{{ #if: {{{1}}}|yes|no}}', 'Page1', [null]], [/^yes$/] ],
         ['#if {{#expr: 0}}', ['{{ #if: {{#expr: 0}}|yes|no}}', 'Page1', []], [/^no$/] ],
-        ['#ifeq:', ['{{ #ifeq: {{{1|+}}} | {{{1|-}}} | defined | undefined }}', 'Page1', []], [/^undefined$/] ],
-        ['#ifeq:', ['{{ #ifeq: {{{1|+}}} | {{{1|-}}} | defined | undefined }}', 'Page1', ['yes']], [/^defined$/] ],
+        ['#ifeq1:', ['{{ #ifeq: {{{1|+}}} | {{{1|-}}} | defined | undefined }}', 'Page1', []], [/^undefined$/] ],
+        ['#ifeq2:', ['{{ #ifeq: {{{1|+}}} | {{{1|-}}} | defined | undefined }}', 'Page1', ['yes']], [/^defined$/] ],
         ['Basic Text', ['text', 'Page1', []], [/^text$/]],
         ['#expr: 5', ['{{ #expr: 5}}', 'Page1', []], [/^5$/] ],
         ['#expr: 5+8/2', ['{{ #expr: 5+8/2 }}', 'Page1', []], [/^9$/] ],
