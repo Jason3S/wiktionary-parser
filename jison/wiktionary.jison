@@ -5,6 +5,15 @@ To build this grammar:
 $ jison wiktionary.jison -m commonjs -p lalr
 */
 /* lexical grammar */
+
+%{
+    // First Block of code.
+
+    var Entities = require('html-entities').AllHtmlEntities;
+    var html_entities = new Entities();
+
+%}
+
 %lex
 
 /*
@@ -25,6 +34,8 @@ NonListCharacters       [^:#*;]
 %x nowiki comment
 
 %{
+    // Block 2
+
     function CreateListStack () {
         var stack = [''];
         return {
@@ -729,6 +740,3 @@ end-of-file
     ;
 
 %%
-
-var Entities = require('html-entities').AllHtmlEntities;
-var html_entities = new Entities();

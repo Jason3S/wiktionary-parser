@@ -4,36 +4,36 @@
 
 import * as _ from 'lodash';
 
-export interface IPageInfo {
+export interface PageInfo {
     page: string;
     params: string[];
     isTranscluded: boolean;
 }
 
-export interface IWikiAst {
-    type: string;
-    children?: IWikiAst[];
+export interface WikiAst {
+    type?: string;
+    children?: WikiAst[];
     value?: any;
 }
 
-export interface IWikiAstTree extends IWikiAst {
-    eval(info: IPageInfo): any;
+export interface WikiAstTree extends WikiAst {
+    eval(info: PageInfo): any;
     getType(): any;
 }
 
-export interface IWikiAstNode extends IWikiAstTree {
-    children: IWikiAst[];
+export interface WikiAstNode extends WikiAstTree {
+    children: WikiAst[];
 }
 
-export interface IWikiAstLeaf extends IWikiAstTree {
+export interface IWikiAstLeaf extends WikiAstTree {
     value: any;
 }
 
 class AstEvalContext {
-    constructor(public node: IWikiAstTree, public info: IPageInfo) {}
+    constructor(public node: WikiAstTree, public info: PageInfo) {}
     public static eval(
-        node: IWikiAstTree,
-        info: IPageInfo,
+        node: WikiAstTree,
+        info: PageInfo,
         fn: (...values) => any,
         values
     ) {
@@ -41,9 +41,9 @@ class AstEvalContext {
     }
 }
 
-export class GenericNode implements IWikiAstTree, IWikiAstNode {
-    constructor(public children: IWikiAstTree[], public type: string, public fn: (...values) => any, public limit: number = 0) {}
-    public eval(info: IPageInfo): any {
+export class GenericNode implements WikiAstTree, WikiAstNode {
+    constructor(public children: WikiAstTree[], public type: string, public fn: (...values) => any, public limit: number = 0) {}
+    public eval(info: PageInfo): any {
         const seq = _(this.children).map(c => c.eval(info));
         return AstEvalContext.eval(this, info, this.fn, seq.value());
     }
@@ -52,9 +52,9 @@ export class GenericNode implements IWikiAstTree, IWikiAstNode {
     }
 }
 
-export class GenericLeaf implements IWikiAstTree, IWikiAstLeaf {
+export class GenericLeaf implements WikiAstTree, IWikiAstLeaf {
     constructor(public type: string, public value: any, public fn = (value: any) => { return value; }) {}
-    public eval(info: IPageInfo): any {
+    public eval(info: PageInfo): any {
         return this.fn(this.value);
     }
     public getType() {
@@ -62,10 +62,10 @@ export class GenericLeaf implements IWikiAstTree, IWikiAstLeaf {
     }
 }
 
-export class TransclusionNode implements IWikiAstTree, IWikiAstNode {
-    constructor(public children: IWikiAstTree[], public type: string) {}
+export class TransclusionNode implements WikiAstTree, WikiAstNode {
+    constructor(public children: WikiAstTree[], public type: string) {}
 
-    public eval(info: IPageInfo): any {
+    public eval(info: PageInfo): any {
         const isTranscluded = info.isTranscluded;
         const isIncluded = (isTranscluded && this.type === 'includeonly')
             || (! isTranscluded && this.type === 'noinclude')
@@ -88,7 +88,7 @@ export class TransclusionNode implements IWikiAstTree, IWikiAstNode {
 
 class PageParamContext extends AstEvalContext {
 
-    constructor(public node: IWikiAstTree, public info: IPageInfo) {
+    constructor(public node: WikiAstTree, public info: PageInfo) {
         super(node, info);
     }
 
@@ -147,7 +147,7 @@ export const fnMap = {
 
 function makeNodeMap(type: string) {
     const fnMapItem = fnMap[type];
-    return (c: IWikiAstTree[]) => new GenericNode(c, type, fnMapItem.fn, fnMapItem.limit);
+    return (c: WikiAstTree[]) => new GenericNode(c, type, fnMapItem.fn, fnMapItem.limit);
 }
 
 const nodeMap = {
@@ -162,14 +162,14 @@ const nodeMap = {
     '&&':   makeNodeMap('&&'),
     'if':   makeNodeMap('if'),
     'ifeq': makeNodeMap('ifeq'),
-    includeonly:    (c: IWikiAstTree[]) => new TransclusionNode(c, 'includeonly'),
-    noinclude:      (c: IWikiAstTree[]) => new TransclusionNode(c, 'noinclude'),
-    onlyinclude:    (c: IWikiAstTree[]) => new TransclusionNode(c, 'onlyinclude'),
+    includeonly:    (c: WikiAstTree[]) => new TransclusionNode(c, 'includeonly'),
+    noinclude:      (c: WikiAstTree[]) => new TransclusionNode(c, 'noinclude'),
+    onlyinclude:    (c: WikiAstTree[]) => new TransclusionNode(c, 'onlyinclude'),
     content:        makeNodeMap('content'),
     pageParam:      makeNodeMap('pageParam')
 };
 
-export function node(type: string, children: IWikiAstTree[]) {
+export function node(type: string, children: WikiAstTree[]) {
     const fn = nodeMap[type];
     if (! fn) {
         return null;
@@ -188,7 +188,7 @@ export interface ISimpleAst {
     c?: ISimpleAst[];   // children
 }
 
-export function convertAst(bAst: ISimpleAst): IWikiAstTree {
+export function convertAst(bAst: ISimpleAst): WikiAstTree {
     if (bAst.v !== undefined || bAst.c === undefined) {
         return bAst.t ? leaf(bAst.v, bAst.t) : leaf(bAst.v);
     }

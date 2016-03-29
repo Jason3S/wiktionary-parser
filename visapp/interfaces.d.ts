@@ -7,9 +7,9 @@
 declare type AstValue = string|number|boolean;
 
 interface AstModel {
-    t: string;                  // type
+    t?: string;                // type
     c?: AstModel[];            // children
-    v?: AstValue;               // value
+    v?: AstValue;              // value
 }
 
 interface AstTree extends AstModel {
@@ -18,7 +18,7 @@ interface AstTree extends AstModel {
 
 interface AstQuery {
     lang: string;
-    word: string;
+    page: string;
     site?: string;
 }
 

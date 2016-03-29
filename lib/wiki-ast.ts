@@ -5,7 +5,7 @@
 import * as _ from 'lodash';
 
 export interface WikiAbstractSyntaxTree {
-    t: string;
+    t?: string;
     c?: WikiAbstractSyntaxTree[];
     v?: string;
 }

@@ -3,33 +3,30 @@
  */
 
 import React = require('react');
-import * as _ from 'lodash';
-import { TreeNode } from "./treeNode";
-import { AstDocView } from "./astDocView";
-import { IWiktionaryQueryResult } from "../../lib/wiktionary/wiktionary-reader";
+import { TreeNode } from './treeNode';
+import { AstDocView } from './astDocView';
 
-interface IAstViewerProps {
-    appState: ApplicationState
+interface AstViewerProps extends ApplicationState {
 }
 
-class AstViewer extends React.Component<IAstViewerProps, {}> {
+class AstViewer extends React.Component<AstViewerProps, {}> {
     render() {
-        const { appState } = this.props;
-        const { lang, word } = appState.currentPage;
+        const appState = this.props;
+        const { lang, page } = appState.currentPage;
         const tree = appState.ast || {t: 'Root', v: 'Root'};
         return ((
             <div>
                 <div className="row">
                     <div className="col-md-12">
-                        Language: {lang}, Word: {word}
+                        Language: {lang}, Word: {page}
                     </div>
                 </div>
                 <div className="row">
                     <div className="col-md-4 ast-tree-view">Wiki AST
-                        <TreeNode model={tree} query={{lang,word}}/>
+                        <TreeNode model={tree} query={{lang, page}}/>
                     </div>
                     <div className="col-md-8 ast-doc-view">Document:
-                        <AstDocView model={tree} query={{lang,word}}/>
+                        <AstDocView model={tree} query={{lang, page}}/>
                     </div>
                 </div>
             </div>
@@ -37,4 +34,4 @@ class AstViewer extends React.Component<IAstViewerProps, {}> {
     }
 }
 
-export { AstViewer, IAstViewerProps };
+export { AstViewer, AstViewerProps };

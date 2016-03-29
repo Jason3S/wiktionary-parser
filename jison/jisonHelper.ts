@@ -8,7 +8,7 @@ interface ParamDictionary {
 
 export const CONTENT = 'content';
 
-interface Ast {
+export interface Ast {
     t?: string;
     v?: any;
     c?: Ast[];

@@ -1,7 +1,7 @@
 /// <reference path="./jison_parser.d.ts" />
 
 interface WikiAbstractSyntaxTree {
-    t: string;
+    t?: string;
     c?: WikiAbstractSyntaxTree[];
     v?: string;
 }

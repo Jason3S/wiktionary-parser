@@ -11,7 +11,7 @@ class TreeNode extends React.Component<AstProps, AstState> {
 
     public render() {
         const props = this.props;
-        const model:AstModel = props.model || {t: ''};
+        const model: AstModel = props.model || {t: ''};
         const hasChildren = model.c && model.c.length;
         const children = hasChildren && model.c
             ? model.c.map((node: AstModel, index: number) => <TreeNode key={index} model={node} query={props.query} />)

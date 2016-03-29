@@ -2,23 +2,22 @@
  * Created by jasondent on 16/01/2016.
  */
 
-import React = require('react');
+import * as React from 'react';
 import ReactDOM = require('react-dom');
-// import { AstViewer, IAstViewerProps } from './components/astViewer';
-import { Router, Route, IndexRoute, browserHistory } from 'react-router'
+import { AstViewer } from './components/astViewer';
+import { Router, Route, browserHistory } from 'react-router';
 import { syncHistoryWithStore, routerReducer } from 'react-router-redux';
 import { reducers } from './reducers/visapp';
 import Redux = require('redux');
 import * as reduxThunk from 'redux-thunk';
 import { Provider } from 'react-redux';
-import {requestPage} from './actions/Actions';
 import _ = require('lodash');
-import applyMiddleware = Redux.applyMiddleware;
 import createStore = Redux.createStore;
-import compose = Redux.compose;
 import { createDevTools } from 'redux-devtools';
 import LogMonitor from 'redux-devtools-log-monitor';
 import DockMonitor from 'redux-devtools-dock-monitor';
+import { observableFromStore } from 'redux-rx';
+import { changePage, requestPage } from './actions/Actions';
 
 const thunkMiddleware = reduxThunk.default;
 
@@ -33,75 +32,11 @@ interface AstAppProps {
     };
 }
 
-/*
-class AstApp extends React.Component<IAstAppProps, {}> {
-    render() {
-        const { lang, word } = this.props.params;
-        const appState = requestPage(lang, word);
-        return (
-            <AstViewer appState={appState}/>
-        );
-    }
-}
-
-function appRender() {
-    const {lang, word} = applicationState.currentPage;
-    ReactDOM.render((
-            <AstApp params={{lang, word}} />
-        ),
-        document.getElementById('content-container')
-    );
-}
-
-class AppPageRequest extends React.Component<IAstAppProps, {}> {
-    render() {
-        const defaultLang = 'en';
-        const defaultWord = 'walk';
-        const { lang, word } = this.props.params;
-        const appState = requestPage(lang||defaultLang, word||defaultWord);
-        console.log(this.props);
-        window.setTimeout(appRender, 0);
-        return null;
-    }
-}
-*/
-
-/*
-function setupRouter() {
-    ReactDOM.render((
-            <Router history={browserHistory}>
-                <Route path="/(:lang/:word)" component={AppPageRequest}>
-                </Route>
-            </Router>
-        ),
-        document.getElementById('router')
-    );
-}
-*/
-
-/*
-// Sync dispatched route actions to the history
-const reduxRouterMiddleware = syncHistory(history);
-const createStoreWithMiddleware = compose(
-    applyMiddleware(thunkMiddleware, reduxRouterMiddleware),
-    window.devToolsExtension ? window.devToolsExtension() : f => f
-)(createStore);
-
-// Required for replaying actions from devtools to work
-reduxRouterMiddleware.listenForReplays(store);
-
-const store = createStoreWithMiddleware(reducer);
-
-const history = useBasename(createHistory)({
-    basename: '/'
-});
-
-*/
-
-
-const reducer = Redux.combineReducers(_.assign({}, reducers, {
-  routing: routerReducer
-}));
+const reducer = Redux.combineReducers(_.assign(
+    {},
+    reducers,
+    { routing: routerReducer }
+));
 
 const DevTools = createDevTools(
   <DockMonitor toggleVisibilityKey="ctrl-h" changePositionKey="ctrl-q">
@@ -119,6 +54,17 @@ const store = createStore(
     )
 );
 
+observableFromStore(store)
+    .map((state: ApplicationState) => state.currentPage)
+    .scan((prevState, state) => {
+        if (prevState !== state) {
+            // store.dispatch(changePage(state));
+            console.log(state);
+        }
+        return state;
+    }, null)
+    .subscribe(() => {});
+
 const history = syncHistoryWithStore(browserHistory, store);
 
 
@@ -130,6 +76,7 @@ function AppContent(props: any) {
     return (
         <div>
             <h1>Content</h1>
+            <AstViewer {...props} />
             <br/>
             {JSON.stringify(props, (_, v) => v, 2)}
         </div>
@@ -156,5 +103,3 @@ ReactDOM.render(
   document.getElementById('content-container')
 );
 
-// Force the initial state and cause a render to happen.
-store.dispatch(requestPage({lang: 'en', page: 'walk', site: 'wiktionary.org'}));
