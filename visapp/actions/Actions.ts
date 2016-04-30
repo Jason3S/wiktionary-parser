@@ -13,7 +13,7 @@ export const Actions = {
 };
 
 
-interface PayLoad {
+export interface PayLoad {
 }
 
 export interface Action {
@@ -21,23 +21,32 @@ export interface Action {
     payload: PayLoad;
 }
 
-export interface ChangePagePayload extends PayLoad { lang: string; page: string; site?: string; }
+export interface ChangePagePayload extends PayLoad, AstQuery {}
 export function changePage(payload: ChangePagePayload): Action {
     return { type: Actions.CHANGE_PAGE, payload };
 }
 
-export interface RequePagePayload extends PayLoad { lang: string; page: string; site: string; }
-export function requestPage(payload: ChangePagePayload): Action {
+export interface RequestPagePayload extends PayLoad, AstQuery {}
+export interface RequestPageAction extends Action { payload: RequestPagePayload; }
+export const isRequestPageAction = genIsAction<RequestPageAction>(Actions.REQUEST_PAGE);
+export function requestWikiPage(payload: RequestPagePayload): RequestPageAction {
     return { type: Actions.REQUEST_PAGE, payload };
 }
 
-
-export interface  RequestPageReady extends PayLoad { lang: string; page: string; site: string; ast: AstModel; }
-export function requestPageReady(payload: RequestPageReady): Action {
+export interface RequestedPageReady extends PayLoad { lang: string; page: string; site?: string; ast: AstModel; }
+export interface RequestedPageReadyAction extends Action { payload: RequestedPageReady; }
+export function requestedPageReady(payload: RequestedPageReady): RequestedPageReadyAction {
     return { type: Actions.REQUEST_PAGE_READY, payload };
 }
 
-export function applyAst() {
-    return { type: Actions.APPLY_AST, payload: {} };
+export interface ApplyAstPayload extends PayLoad, AstModel {}
+export interface ApplyAstAction extends Action { payload: ApplyAstPayload; }
+export const isApplyAstAction = genIsAction<ApplyAstAction>(Actions.APPLY_AST);
+export function applyAst(astModel: AstModel): ApplyAstAction {
+    return { type: Actions.APPLY_AST, payload: astModel };
 }
 
+function isAction<T extends Action>(action: Action, type: string): action is T { return action.type === type; }
+function genIsAction<T extends Action>(type: string) {
+    return (action: Action): action is T => isAction<T>(action, type);
+}

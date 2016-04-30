@@ -3,8 +3,11 @@
  */
 
 import * as Redux from 'redux';
-import { Action, Actions } from '../actions/Actions';
+import { Action, Actions, isApplyAstAction } from '../actions/Actions';
 import {ChangePagePayload} from '../actions/Actions';
+import {isRequestPageAction} from '../actions/Actions';
+import {hashKeyForQuery, combine} from '../lib/StateHelper';
+import * as _ from 'lodash';
 
 const initialState: ApplicationState = {
     currentPage: {
@@ -12,7 +15,7 @@ const initialState: ApplicationState = {
         page: 'walk',
         site: 'wiktionary.org'
     },
-    ast: {t: 'root', v: 'root'},
+    ast: {id: 0, t: 'root', v: 'root'},
     cache: {}
 };
 
@@ -54,6 +57,11 @@ function ast(state: AstModel, action: Action): AstModel {
     if (state === undefined) {
         state = initialState.ast;
     }
+
+    if (isApplyAstAction(action)) {
+        return action.payload;
+    }
+
     return state;
 }
 
@@ -61,11 +69,20 @@ function cache(state: AstCache, action: Action): AstCache {
     if (state === undefined) {
         state = initialState.cache;
     }
+
+    if (isRequestPageAction(action)) {
+        const key = hashKeyForQuery(action.payload);
+        if (! state[key]) {
+            return combine(state, { [key]: {query: action.payload, ast: null}});
+        }
+        return state;
+    }
+
     return state;
 }
 
-export const reducers = {
+export const reducers = Redux.combineReducers({
     currentPage,
     ast,
     cache
-};
+});

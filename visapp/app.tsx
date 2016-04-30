@@ -2,22 +2,23 @@
  * Created by jasondent on 16/01/2016.
  */
 
-import * as React from 'react';
+/* tslint:disable:no-unused-variable */
+// Required for JSX to compile
+import React = require('react');
+/* tslint:enable:no-unused-variable */
 import ReactDOM = require('react-dom');
 import { AstViewer } from './components/astViewer';
-import { Router, Route, browserHistory } from 'react-router';
-import { syncHistoryWithStore, routerReducer } from 'react-router-redux';
 import { reducers } from './reducers/visapp';
-import Redux = require('redux');
+import * as Redux from 'redux';
 import * as reduxThunk from 'redux-thunk';
-import { Provider } from 'react-redux';
 import _ = require('lodash');
 import createStore = Redux.createStore;
 import { createDevTools } from 'redux-devtools';
 import LogMonitor from 'redux-devtools-log-monitor';
 import DockMonitor from 'redux-devtools-dock-monitor';
 import { observableFromStore } from 'redux-rx';
-import { changePage, requestPage } from './actions/Actions';
+import { requestWikiPage, changePage } from './actions/Actions';
+import {requestPageAync} from './async-actions/AsyncActions';
 
 const thunkMiddleware = reduxThunk.default;
 
@@ -32,12 +33,6 @@ interface AstAppProps {
     };
 }
 
-const reducer = Redux.combineReducers(_.assign(
-    {},
-    reducers,
-    { routing: routerReducer }
-));
-
 const DevTools = createDevTools(
   <DockMonitor toggleVisibilityKey="ctrl-h" changePositionKey="ctrl-q">
     <LogMonitor theme="tomorrow" preserveScrollTop={false} />
@@ -45,7 +40,7 @@ const DevTools = createDevTools(
 );
 
 const store = createStore(
-    reducer,
+    reducers,
     Redux.compose(
         Redux.applyMiddleware(
             thunkMiddleware
@@ -55,22 +50,16 @@ const store = createStore(
 );
 
 observableFromStore(store)
+    .debounce(100)
     .map((state: ApplicationState) => state.currentPage)
     .scan((prevState, state) => {
-        if (prevState !== state) {
-            // store.dispatch(changePage(state));
+        if (! _.isEqual(prevState, state)) {
+            store.dispatch(requestPageAync(requestWikiPage(state)));
             console.log(state);
         }
         return state;
     }, null)
     .subscribe(() => {});
-
-const history = syncHistoryWithStore(browserHistory, store);
-
-
-function AppRootRoute(props: AstAppProps) {
-    return (<div></div>);
-}
 
 function AppContent(props: any) {
     return (
@@ -87,19 +76,19 @@ function bindRequests() {
     return (dispatch) => null;
 }
 
+store.subscribe(render);
 store.dispatch(bindRequests());
+store.dispatch(changePage({lang: 'en', page: 'slide'}));
 
-ReactDOM.render(
-  <Provider store={store}>
+
+function render() {
+    ReactDOM.render(
     <div>
-      <Router history={history}>
-        <Route path="/" component={AppRootRoute}>
-        </Route>
-      </Router>
-      <AppContent {...store.getState()} />
-      <DevTools />
-    </div>
-  </Provider>,
-  document.getElementById('content-container')
-);
+        <AppContent {...store.getState()} />
+        <DevTools store={store} />
+    </div>,
+    document.getElementById('content-container')
+    );
+}
+
 

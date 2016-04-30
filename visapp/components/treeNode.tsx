@@ -1,27 +1,21 @@
 
+/* tslint:disable:no-unused-variable */
+// Required for JSX to compile
 import React = require('react');
+/* tslint:enable:no-unused-variable */
 
-
-class TreeNode extends React.Component<AstProps, AstState> {
-
-    constructor(props: AstProps) {
-        super(props);
-        this.state = { showChildren: true };
-    }
-
-    public render() {
-        const props = this.props;
-        const model: AstModel = props.model || {t: ''};
+function TreeNode(props: AstProps) {
+        const model: AstModel = props.model || {id: -1, t: ''};
         const hasChildren = model.c && model.c.length;
-        const children = hasChildren && model.c
+        const children = hasChildren
             ? model.c.map((node: AstModel, index: number) => <TreeNode key={index} model={node} query={props.query} />)
             : null;
         const nodeValue = model.v || '';
-        if (hasChildren) {
+        if (children) {
             return (
                 <div className="treeNode" >
-                    <label><input type="checkbox" onChange={() => {this.toggleShowChildren();}}/> {model.t}</label>
-                    <div className={this.state.showChildren ? 'show' : 'hidden'} >
+                    <b>{model.t}</b>
+                    <div className="show" >
                         {children}
                     </div>
                 </div>
@@ -33,11 +27,6 @@ class TreeNode extends React.Component<AstProps, AstState> {
                 <i>{nodeValue.toString().substr(0, 50)}</i>
             </div>
         );
-    }
-
-    public toggleShowChildren() {
-        this.setState({showChildren: !this.state.showChildren});
-    }
 }
 
 export { TreeNode };

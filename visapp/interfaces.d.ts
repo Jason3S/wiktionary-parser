@@ -7,9 +7,10 @@
 declare type AstValue = string|number|boolean;
 
 interface AstModel {
-    t?: string;                // type
-    c?: AstModel[];            // children
-    v?: AstValue;              // value
+    id: number;                 // unique id within the tree
+    t?: string;                 // type
+    c?: AstModel[];             // children
+    v?: AstValue;               // value
 }
 
 interface AstTree extends AstModel {
