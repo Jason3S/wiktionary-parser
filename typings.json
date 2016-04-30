@@ -42,6 +42,7 @@
     "whatwg-fetch": "registry:dt/whatwg-fetch#0.0.0+20160316155526"
   },
   "ambientDevDependencies": {
+    "deep-freeze": "registry:dt/deep-freeze#0.0.0+20160317120654",
     "enzyme": "registry:dt/enzyme#1.2.0+20151218140740",
     "js-beautify": "registry:dt/js-beautify#0.0.0+20160316155526"
   },
