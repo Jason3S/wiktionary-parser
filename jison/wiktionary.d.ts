@@ -6,9 +6,16 @@ interface WikiAbstractSyntaxTree {
     v?: string;
 }
 
+interface WiktionaryParser extends Parser {
+    parse: (input: string) => WikiAbstractSyntaxTree;
+}
+
+interface WiktionaryParserConstructor {
+    new (): WiktionaryParser;
+}
 
 declare var parser: DefaultParserInstance;
-declare var Parser: ParserConstructor;
+declare var Parser: WiktionaryParserConstructor;
 declare var parse: (...args) => WikiAbstractSyntaxTree;
 
-export { parser, Parser, parse };
+export { parser, Parser, parse, WikiAbstractSyntaxTree };

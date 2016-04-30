@@ -2,8 +2,11 @@
 import * as chai from 'chai';
 import { missingParam, leaf, node, addChild, content, CONTENT } from '../../jison/jisonHelper';
 import { normalizeParams, normalizePageName } from '../../jison/jisonHelper';
+import * as jisonHelper from '../../jison/jisonHelper';
+import * as _ from 'lodash';
+import df = require('deep-freeze');
 
-const { assert } = chai;
+const { assert, expect } = chai;
 
 describe('test jisonHelper functions', () => {
     it('missingParam', () => {
@@ -53,5 +56,40 @@ describe('test jisonHelper functions', () => {
         assert.equal(normalizePageName('Wiktionary:walk'), 'walk');
     });
 
-    it('', () => {});
+    it('isContentNode', () => {
+        expect(jisonHelper.isContentNode({t: jisonHelper.CONTENT, c: []})).to.be.true;
+        expect(jisonHelper.isContentNode({t: 'content', c: []})).to.be.true;
+        expect(jisonHelper.isContentNode({t: 'text', c: []})).to.be.false;
+    });
+
+    it('trimParam', () => {
+        const a = df(leaf('a'));
+        const b = df(leaf('b'));
+        const c = df(leaf('c'));
+        const _a = df(leaf(' a'));
+        const b_ = df(leaf('b '));
+        const s = df(leaf('  '));
+
+        const tests: {test: jisonHelper.Node, toMatch: jisonHelper.Node}[] = [
+            {test: content(leaf('a'), leaf('b')), toMatch: content(a, b)},
+            {test: content(a, b), toMatch: content(a, b)},
+            {test: content(_a, b_), toMatch: content(a, b)},
+            {test: content(a, content(b)), toMatch: content(a, b)},
+            {test: content(content(a), b), toMatch: content(a, b)},
+            {test: content(content(a), content(b)), toMatch: content(a, b)},
+            {test: content(content(content(a), content(b))), toMatch: content(leaf('a'), leaf('b'))},
+            {test: content(a, b), toMatch: node(jisonHelper.CONTENT, [a, b])},
+            {test: content(a, content(b, c)), toMatch: node(jisonHelper.CONTENT, [a, b, c])},
+            {test: content(content(a), content(b, c)), toMatch: node(jisonHelper.CONTENT, [a, b, c])},
+            {test: content(content(a, b), content(c)), toMatch: node(jisonHelper.CONTENT, [a, b, c])},
+            {test: content(_a, content(b_, content(s, s))), toMatch: content(a, b)},
+            {test: content(s, content(s, content(_a, b_))), toMatch: content(a, b)},
+            {test: df(content(leaf('a'), leaf('b'))), toMatch: content(a, b)},
+            {test: df(content(_a, b_)), toMatch: content(a, b)},
+        ];
+
+        _.forEach(tests, ({test, toMatch}, index) => {
+            expect(jisonHelper.trimParam(test), 'test #' + index).to.be.deep.equal(toMatch);
+        });
+    });
 });

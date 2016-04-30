@@ -1,12 +1,13 @@
 
 import * as _ from 'lodash';
+import {merge} from 'tsmerge';
 
-interface ParamDictionary {
+export interface ParamDictionary {
     [index: string]: string;
     [index: number]: string;
 }
 
-export const CONTENT = 'content';
+export const CONTENT: 'content' = 'content';
 
 export interface Ast {
     t?: string;
@@ -14,26 +15,32 @@ export interface Ast {
     c?: Ast[];
 }
 
-interface Leaf extends Ast {
+export interface Leaf extends Ast {
     v: any;
 }
 
-interface Node extends Ast {
+export interface Node extends Ast {
     t: string;
     c: Ast[];
+}
+
+export interface ContentNode extends Node {
+}
+
+export function isContentNode(node: Ast): node is ContentNode {
+    return node.t === CONTENT;
 }
 
 export function missingParam(): Leaf {
     return { v: undefined };
 }
 
-export function leaf(v): Leaf {
-    v = v === undefined ? null : v;
-    return { v: v };
+export function leaf(v: any = null): Leaf {
+    return { v };
 }
 
 export function node(t: string, c: Ast[] = []): Node {
-    return { t: t, c: c };
+    return { t, c };
 }
 
 export function addChild(n: Node, c: Ast): Node {
@@ -43,7 +50,7 @@ export function addChild(n: Node, c: Ast): Node {
 export function append(n: Node, b: Ast): Node {
     const c = n.c.concat([b]);
     const { t } = n;
-    return { t, c};
+    return { t, c };
 }
 
 export function content(a: Ast, b?: Ast): Node {
@@ -51,115 +58,90 @@ export function content(a: Ast, b?: Ast): Node {
         if (! a) {
             return node(CONTENT);
         }
-        if (a.t === CONTENT) {
-            return a as Node;
+        if (isContentNode(a)) {
+            return a;
         }
         return node(CONTENT, [a]);
     }
-    if (a.t === CONTENT) {
-        if (b.t === CONTENT) {
+    if (isContentNode(a)) {
+        if (isContentNode(b)) {
             return node(CONTENT, a.c.concat(b.c));
         }
         return node(CONTENT, a.c.concat([b]));
-    } else if (b.t === CONTENT) {
+    } else if (isContentNode(b)) {
         return node(CONTENT, [a].concat(b.c));
     }
-
     return node(CONTENT, [a, b]);
 }
 
 
-function trimParamLeft(ast) {
-    if (ast == null) {
-        return ast;
+function baseTrim(ast: Ast, direction: 'left' | 'right') {
+    const { fnTrim, fnReduce } = direction === 'left'
+        ? {
+            fnTrim: _.trimLeft,
+            fnReduce: (c: Ast[]): Ast[] => c.reduce((accum: Ast[], ast: Ast): Ast[] => {
+                if (accum) {
+                    return [...accum, ast];
+                }
+                const c = baseTrim(ast, direction);
+                if (c) {
+                    return [c];
+                }
+                return null;
+            }, null)
+        }
+        : {
+            fnTrim: _.trimRight,
+            fnReduce: (c: Ast[]): Ast[] => c.reduceRight((accum: Ast[], ast: Ast): Ast[] => {
+                if (accum) {
+                    return [ast, ...accum];
+                }
+                const c = baseTrim(ast, direction);
+                if (c) {
+                    return [c];
+                }
+                return null;
+            }, null)
+        }
+        ;
+
+    if (!ast) {
+        return null;
     }
-
     if (typeof ast.v === 'string') {
-        ast.v = ast.v.trimLeft();
-
-        if (ast.v === '') {
+        const v = fnTrim(ast.v);
+        if (v === '') {
             return null;
         }
-
-        return ast;
+        return merge(ast, {v});
     }
-
-    const c = ast.c;
-    if (! c || ! c.length) {
+    if (!ast.c || !ast.c.length) {
         return null;
     }
 
-    if (ast.t !== CONTENT) {
+    if (!isContentNode(ast)) {
         return ast;
     }
 
-    const len = c.length;
-    let i;
-
-    for (i = 0; i < len; ++i) {
-        c[i] = trimParamLeft(c[i]);
-        if (c[i] !== null) {
-            break;
-        }
-    }
-
-    if (i >= len) {
+    const c = fnReduce(ast.c);
+    if (!c) {
         return null;
     }
 
-    ast.c = c.slice(i);
-
-    if (ast.c.length === 1) {
-        return ast.c[0];
+    if (c.length === 1 && isContentNode(c[0])) {
+        return c[0];
     }
 
-    return ast;
+    return merge(ast, { c });
+}
+
+function trimParamLeft(ast) {
+    return baseTrim(ast, 'left');
 }
 
 
 function trimParamRight(ast) {
-    if (ast == null) {
-        return ast;
-    }
-
-    if (typeof ast.v === 'string') {
-        ast.v = ast.v.trimRight();
-
-        if (ast.v === '') {
-            return null;
-        }
-
-        return ast;
-    }
-
-    const c = ast.c;
-    if (! c || ! c.length) {
-        return null;
-    }
-
-    if (ast.t !== CONTENT) {
-        return ast;
-    }
-
-    const len = c.length;
-    let i;
-
-    for (i = len - 1; i >= 0; --i) {
-        c[i] = trimParamRight(c[i]);
-        if (c[i] !== null) break;
-    }
-
-    if (i < 0) {
-        return null;
-    }
-
-    ast.c = c.slice(0, i + 1);
-
-    if (ast.c.length === 1) {
-        return ast.c[0];
-    }
-
-    return ast;
+    return baseTrim(ast, 'right');
 }
 
 export function trimParam(ast) {

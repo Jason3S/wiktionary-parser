@@ -4,7 +4,9 @@ import {WikiParser} from '../../visapp/lib/WikiParser';
 
 const { assert } = chai;
 
-describe('test fetching and parsing wiki pages', () => {
+describe('test fetching and parsing wiki pages', function() {
+    this.timeout(15000);
+
     const parser = new WikiParser();
 
     it('fetches a wiktionary page', () => {

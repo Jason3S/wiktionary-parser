@@ -11,6 +11,14 @@ const parserSamples = samples.getTemplateSamples();
 
 const { assert } = chai;
 
+const debug = false;
+
+function log(...args: any[]) {
+    if (debug) {
+        console.log.apply(null, args);
+    }
+}
+
 describe('Wiktionary', function () {
     describe('Parsing', function () {
         parserSamples.forEach(function(test) {
@@ -19,11 +27,11 @@ describe('Wiktionary', function () {
             const regExTests = expected;
 
             it('should parse: ' + name, function () {
-                console.log('\nTesting ' + name + ': ' + JSON.stringify(text) + '\n');
+                log('\nTesting ' + name + ': ' + JSON.stringify(text) + '\n');
                 const ast = wikiTemplateParser.parse(text);
                 const wast = wikiAst.convertAst(ast);
-                const result = wikiTemplateParser.parser.processWikiTemplate(page as string, params as string[], ast);
-                console.log(result + '\n');
+                const result = wikiTemplateParser.parser.processWikiTemplate(page, params as string[], ast);
+                log(result + '\n');
 
                 const wResult = wast.eval({page: page, params: params, isTranscluded: true});
 
