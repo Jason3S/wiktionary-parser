@@ -3,7 +3,7 @@
  */
 
 import * as chai from 'chai';
-import * as wiktionary from '../jison/wiktionary';
+import {wiktionaryParser as wiktionary} from '../jison/wiki';
 import * as samples from '../sample-data/samples';
 import * as wikiAst from '../lib/wiki-ast';
 

@@ -5,6 +5,7 @@ import * as jisonHelper from '../../jison/jisonHelper';
 import * as _ from 'lodash';
 import df = require('deep-freeze');
 import {merge} from 'tsmerge';
+import {flatten, flattenTokens} from '../../jison/jisonHelper';
 
 const { assert, expect } = chai;
 
@@ -79,11 +80,48 @@ describe('test jisonHelper functions', () => {
             expect(jisonHelper.trimParam(test), 'test #' + index).to.be.deep.equal(toMatch);
         });
     });
+});
 
-    it('', () => {
-        const defaults = { timeout: 30000, retries: 3 };
-        const customizations = { retries: 10 };
-        const options = merge(defaults, customizations);
-        console.log(options);
+describe('validate flatten functions', () => {
+    it('tests flatten', () => {
+        const values = [
+            ['a', 'b', 'c'],
+            ['d'],
+            ['e'],
+            ['f', 'g']
+        ];
+        const expected = 'abcdefg';
+        const fnFetch = () => {
+            let index = 0;
+            return () => {
+                return values[index++];
+            };
+        };
+        const fn = flatten(fnFetch());
+        expected.split('').forEach((letter) => {
+            const s = fn();
+            expect(s).to.equal(letter);
+        });
+    });
+
+    it('tests flattenTokens', () => {
+        const values = [
+            ['a', 'b', 'c'],
+            'd',
+            ['e'],
+            'f', 'g'
+        ];
+        const expected = 'abcdefg';
+        const fnFetch = () => {
+            let index = 0;
+            return () => {
+                return values[index++];
+            };
+        };
+        const fn = flattenTokens(fnFetch());
+        expected.split('').forEach((letter) => {
+            const s = fn();
+            expect(s).to.equal(letter);
+        });
     });
 });

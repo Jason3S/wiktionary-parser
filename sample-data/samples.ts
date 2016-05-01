@@ -167,6 +167,7 @@ type TemplateSample = [string, [string, string, any[]], RegExp[]];
 
 export function getTemplateSamples(): TemplateSample[] {
     return [
+        // Name, [markup, page, params], regexTests[]
         ['noinclude1', ['=<noinclude>\n{{documentation}}\n\n</noinclude>', 'Page1', []], [/^[=]$/] ],
         ['noinclude2', ['<includeonly>=</includeonly>', 'Page1', []], [/^[=]$/] ],
         ['noinclude3', ['<includeonly>=</includeonly><noinclude>{{documentation}}</noinclude>', 'Page1', []], [/^[=]$/] ],

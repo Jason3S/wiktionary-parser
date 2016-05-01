@@ -3,7 +3,7 @@
  */
 
 import * as chai from 'chai';
-import {wikiTemplateParser, processWikiTemplate} from '../jison/wiki';
+import {wikiParser, processWikiTemplate} from '../jison/wiki';
 import * as samples from '../sample-data/samples';
 import * as wikiAst from '../jison/WikiAst';
 
@@ -33,7 +33,7 @@ describe('Wiktionary', function () {
 
             it('should parse: ' + name, function () {
                 log('\nTesting ' + name + ': ' + JSON.stringify(text) + '\n');
-                const ast = wikiTemplateParser.parse(text);
+                const ast = wikiParser.parse(text);
                 console.log(JSON.stringify(text));
                 console.log(JSON.stringify(ast));
                 const wast = wikiAst.convertAst(ast);
@@ -47,6 +47,34 @@ describe('Wiktionary', function () {
                 regExTests.forEach(function(regEx){
                     assert.isTrue(regEx.test(result), regEx.toString() + '.test("' + result + '")');
                 });
+            });
+        });
+    });
+
+    describe('Parsing Markup', function () {
+        const samples = markupSamples.slice(0, 0);
+        samples.forEach(function(test) {
+            const [name, text, tests] = test;
+
+            it('should parse: ' + name, function () {
+                console.log('\nTesting ' + name + ': ' + JSON.stringify(text) + '\n');
+                const ast = wikiParser.parse(text);
+                console.log(prettyjson.render(ast) + '\n');
+
+                assert.isObject(ast, 'Test Parses to Object: "' + text.substr(0, 20) + '"');
+
+                if (tests) {
+                    tests.forEach(function(select){
+                        if (select.s) {
+                            const r = jsonSelect.match(select.s, ast);
+                            assert.deepEqual(r, select.e);
+                        }
+                        if (select.jp) {
+                            const r = jsonPath.query(ast, select.jp);
+                            assert.deepEqual(r, select.e);
+                        }
+                    });
+                }
             });
         });
     });

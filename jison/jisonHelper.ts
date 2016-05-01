@@ -147,4 +147,26 @@ export function trimParam(ast) {
     return ast;
 }
 
+export function flatten<T>(fetch: () => T[]): () => T {
+    let buffer: T[] = [];
 
+    return () => {
+        if (!buffer || !buffer.length) {
+            buffer = fetch();
+            if (!buffer) {
+                return undefined;
+            }
+        }
+        return buffer.shift();
+    };
+}
+
+export function flattenTokens<T>(fetch: () => T[] | T): () => T {
+    return flatten(() => {
+        const tokens = fetch();
+        if (Array.isArray(tokens)) {
+            return tokens;
+        }
+        return [tokens as T];
+    });
+}
