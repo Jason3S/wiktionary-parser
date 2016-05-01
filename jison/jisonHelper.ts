@@ -8,6 +8,7 @@ export interface ParamDictionary {
 }
 
 export const CONTENT: 'content' = 'content';
+export const INCLUDE_MODE: 'include' = 'include';
 
 export interface Ast {
     t?: string;
@@ -152,6 +153,8 @@ export function trimParam(ast) {
     return ast;
 }
 
+const namedParamRegEx = /^([a-zA-Z0-9]+)[=](.*)$/;
+
 /**
  * Covert the page params in to a dicitonary of key/value pairs.
  *
@@ -161,18 +164,16 @@ export function trimParam(ast) {
  * @returns {ParamDictionary}
  */
 export function normalizeParams(pageParams: string[]): ParamDictionary {
-    const namedParamRegEx = /^([a-zA-Z0-9]+)[=](.*)$/;
-
     interface ParamSet { last: number; params: ParamDictionary; }
     const paramSet: ParamSet = _(pageParams)
         .map(p => '' + p)   // force a string
         .reduce((ps: ParamSet, value: string): ParamSet => {
             const match = value.match(namedParamRegEx);
             if (match) {
-                const params = _.assign({}, ps.params, { [match[1]]: match[2] }) as ParamDictionary;
+                const params: ParamDictionary = merge(ps.params, { [match[1]]: match[2] });
                 return { last: ps.last, params };
             }
-            const params = _.assign({}, ps.params, { [ps.last]: value }) as ParamDictionary;
+            const params: ParamDictionary = merge(ps.params, { [ps.last]: value });
             return { last: ps.last + 1, params };
         }, { last: 1, params: {} } as ParamSet);
 
@@ -183,10 +184,7 @@ export function normalizePageName(pageName) {
     return pageName.replace(/^[^:]+[:]/, '');
 }
 
-export function processWikiTemplate(page, params, ast, transclusion) {
-    const INCLUDE_MODE = 'include';
-
-    transclusion = transclusion || INCLUDE_MODE;
+export function processWikiTemplate(page, params, ast, transclusion = INCLUDE_MODE) {
     const isIncludeOnly = transclusion === INCLUDE_MODE;
     const isNoInclude = transclusion !== INCLUDE_MODE;
     const pageParams = normalizeParams(params);

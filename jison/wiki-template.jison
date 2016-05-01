@@ -26,8 +26,6 @@
             return fn.apply(this, arguments);
         };
     }
-
-    parser.processWikiTemplate = thunk('processWikiTemplate');
 %}
 
 /* lexical grammar */

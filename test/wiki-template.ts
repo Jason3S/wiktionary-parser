@@ -3,7 +3,7 @@
  */
 
 import * as chai from 'chai';
-import * as wikiTemplateParser from '../jison/wiki-template';
+import * as wikiTemplateParser from '../jison/wiki';
 import * as samples from '../sample-data/samples';
 import * as wikiAst from '../jison/WikiAst';
 
@@ -29,8 +29,10 @@ describe('Wiktionary', function () {
             it('should parse: ' + name, function () {
                 log('\nTesting ' + name + ': ' + JSON.stringify(text) + '\n');
                 const ast = wikiTemplateParser.parse(text);
+                console.log(JSON.stringify(text));
+                console.log(JSON.stringify(ast));
                 const wast = wikiAst.convertAst(ast);
-                const result = wikiTemplateParser.parser.processWikiTemplate(page, params as string[], ast);
+                const result = wikiTemplateParser.processWikiTemplate(page, params as string[], ast);
                 log(result + '\n');
 
                 const wResult = wast.eval({page: page, params: params, isTranscluded: true});

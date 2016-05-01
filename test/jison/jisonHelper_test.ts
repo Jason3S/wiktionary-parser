@@ -5,6 +5,7 @@ import { normalizeParams, normalizePageName } from '../../jison/jisonHelper';
 import * as jisonHelper from '../../jison/jisonHelper';
 import * as _ from 'lodash';
 import df = require('deep-freeze');
+import {merge} from 'tsmerge';
 
 const { assert, expect } = chai;
 
@@ -91,5 +92,12 @@ describe('test jisonHelper functions', () => {
         _.forEach(tests, ({test, toMatch}, index) => {
             expect(jisonHelper.trimParam(test), 'test #' + index).to.be.deep.equal(toMatch);
         });
+    });
+
+    it('', () => {
+        const defaults = { timeout: 30000, retries: 3 };
+        const customizations = { retries: 10 };
+        const options = merge(defaults, customizations);
+        console.log(options);
     });
 });

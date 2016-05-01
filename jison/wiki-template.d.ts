@@ -7,7 +7,6 @@ interface WikiAbstractSyntaxTree {
 }
 
 interface WikiTemplateParser extends DefaultParserInstance {
-    processWikiTemplate: (page: string, params: string[], ast: WikiAbstractSyntaxTree, transclusion?: string) => any;
     parse: (input: string) => WikiAbstractSyntaxTree;
 }
 
