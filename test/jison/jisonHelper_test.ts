@@ -1,7 +1,6 @@
 
 import * as chai from 'chai';
 import { missingParam, leaf, node, addChild, content, CONTENT } from '../../jison/jisonHelper';
-import { normalizeParams, normalizePageName } from '../../jison/jisonHelper';
 import * as jisonHelper from '../../jison/jisonHelper';
 import * as _ from 'lodash';
 import df = require('deep-freeze');
@@ -42,19 +41,6 @@ describe('test jisonHelper functions', () => {
         assert.deepEqual(content(a), { t: CONTENT, c: [{v: 'hello'}, {v: ' there'}]});
         assert.deepEqual(content(leaf('>'), a), { t: CONTENT, c: [{v: '>'}, {v: 'hello'}, {v: ' there'}]});
         assert.deepEqual(content(null), { t: CONTENT, c: []});
-    });
-
-    it('normalizeParams', () => {
-        assert.deepEqual(normalizeParams('a&b&c&d'.split('&')), { [1]: 'a', [2]: 'b', [3]: 'c', [4]: 'd' });
-        assert.deepEqual(normalizeParams('name=joe'.split('&')), { name: 'joe' });
-        assert.deepEqual(normalizeParams('25&name=joe'.split('&')), { [1]: '25', name: 'joe' });
-        assert.deepEqual(normalizeParams('page=age&25&name=joe'.split('&')), { [1]: '25', name: 'joe', page: 'age' });
-        assert.deepEqual(normalizeParams('page=age&25&name=joe&second'.split('&')), { [1]: '25', name: 'joe', page: 'age', [2]: 'second' });
-    });
-
-    it('normalizePageName', () => {
-        assert.equal(normalizePageName('walk'), 'walk');
-        assert.equal(normalizePageName('Wiktionary:walk'), 'walk');
     });
 
     it('isContentNode', () => {
