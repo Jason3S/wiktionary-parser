@@ -13,9 +13,3 @@ declare module 'isomorphic-fetch' {
     export = fetch;
 }
 
-/* tslint:disable:no-internal-module */
-declare module Redux {
-    export function createStore(reducer: Reducer, initialState?: any, enhancer?: Function): Store;
-}
-/* tslint:enable:no-internal-module */
-

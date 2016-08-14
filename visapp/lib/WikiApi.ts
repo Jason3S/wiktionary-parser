@@ -7,6 +7,7 @@ import * as _ from 'lodash';
 import { IWiktionaryQueryResult } from '../../lib/wiktionary/wiktionary-reader';
 import isNode = require('detect-node');
 import * as fetch from 'isomorphic-fetch';
+import { Dictionary } from 'lodash';
 
 const defaultWikiSite = 'wiktionary.org';
 

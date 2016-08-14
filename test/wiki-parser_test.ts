@@ -35,7 +35,7 @@ describe('Wiktionary', function () {
                 log('\nTesting ' + name + ': ' + JSON.stringify(text) + '\n');
                 const ast = wikiParser.parse(text);
                 console.log(JSON.stringify(text));
-                console.log(JSON.stringify(ast));
+                console.log(prettyjson.render(ast) + '\n');
                 const wast = wikiAst.convertAst(ast);
                 const result = processWikiTemplate(page, params as string[], ast);
                 log(result + '\n');

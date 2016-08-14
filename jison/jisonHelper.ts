@@ -73,7 +73,7 @@ export function content(a: Ast, b?: Ast): Node {
 function baseTrim(ast: Ast, direction: 'left' | 'right') {
     const { fnTrim, fnReduce } = direction === 'left'
         ? {
-            fnTrim: _.trimLeft,
+            fnTrim: _.trimStart,
             fnReduce: (c: Ast[]): Ast[] => c.reduce((accum: Ast[], ast: Ast): Ast[] => {
                 if (accum) {
                     return [...accum, ast];
@@ -86,7 +86,7 @@ function baseTrim(ast: Ast, direction: 'left' | 'right') {
             }, null)
         }
         : {
-            fnTrim: _.trimRight,
+            fnTrim: _.trimEnd,
             fnReduce: (c: Ast[]): Ast[] => c.reduceRight((accum: Ast[], ast: Ast): Ast[] => {
                 if (accum) {
                     return [ast, ...accum];
